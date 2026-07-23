@@ -1,0 +1,8 @@
+{
+  "name": "linkup",
+  "private": true,
+  "scripts": {
+    "vercel-build": "npm install --prefix mobile && npx --prefix mobile expo export -p web",
+    "build": "npm run vercel-build"
+  }
+}

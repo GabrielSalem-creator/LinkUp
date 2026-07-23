@@ -83,18 +83,19 @@ Login screen → **Register** a real user, or **Continue as guest**.
 
 ## Part B — Publish on Vercel
 
-### 1) Push the `mobile` app to GitHub
+### 1) Push to GitHub
 
-Root can be the whole LinkUp repo, but Vercel **Root Directory** must be `mobile`.
+Repo: https://github.com/GabrielSalem-creator/LinkUp
 
-### 2) Create Vercel project
+### 2) Create / fix Vercel project
 
-1. [vercel.com/new](https://vercel.com/new)
-2. Import the repo
-3. **Root Directory** → `mobile`
-4. Framework preset → **Other**
-5. Build command → `npx expo export -p web` (already in `vercel.json`)
-6. Output directory → `dist`
+1. [vercel.com/new](https://vercel.com/new) → Import **GabrielSalem-creator/LinkUp**
+2. **Root Directory** → leave as repo root (`.`) **OR** set to `mobile`
+   - Repo root works now via root `vercel.json` → builds `mobile/dist`
+   - If Root Directory = `mobile`, it uses `mobile/vercel.json`
+3. Framework preset → **Other**
+4. Build command / Output are already in `vercel.json` — do **not** override to Next.js
+5. Ensure Output Directory is **`mobile/dist`** (root) or **`dist`** (if Root Directory = mobile)
 
 ### 3) Environment variables in Vercel
 
@@ -110,13 +111,13 @@ Do **not** add `APPWRITE_API_KEY` to Vercel (server secret for local scripts onl
 
 ### 4) Deploy
 
-Click Deploy. After it finishes, copy the URL (e.g. `https://linkup-xxx.vercel.app`).
+Click **Redeploy**. After it finishes, open the `.vercel.app` URL — you should see LinkUp, not `404 NOT_FOUND`.
 
 ### 5) Allow that hostname in Appwrite
 
-Back in Appwrite → **Platforms → Web** → add `linkup-xxx.vercel.app` (no `https://`).
+Back in Appwrite → **Platforms → Web** → add `your-app.vercel.app` (no `https://`).
 
-Reload the Vercel site → register / guest login → you should see seeded clubs & events.
+Reload the Vercel site → register / demo login → clubs & events load.
 
 ---
 
@@ -152,8 +153,9 @@ Follow prompts; set the same env vars when asked.
 
 | Symptom | Fix |
 |---------|-----|
+| Vercel blank / `404 NOT_FOUND` | Redeploy latest commit. Framework = **Other**. Output = `mobile/dist` (root) or `dist` (Root Directory = mobile). Do not use Next.js preset. |
 | `Invalid origin` / CORS | Add hostname under Appwrite Platforms |
 | Guest login fails | Enable Anonymous in Auth settings |
 | Empty Events list | Run `npm run seed:appwrite` |
 | `Missing APPWRITE_API_KEY` | Paste key into `mobile/.env` |
-| Vercel blank page | Confirm Root Directory = `mobile`, output = `dist` |
+| Vercel blank page | Confirm build logs show `Exported: dist` and Output Directory matches |
