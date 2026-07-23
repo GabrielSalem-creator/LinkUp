@@ -1,18 +1,38 @@
-import { cpSync, rmSync, mkdirSync, existsSync } from 'node:fs';
+import { cpSync, rmSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Runs with Vercel Root Directory = mobile (cannot read files outside mobile/)
+/**
+ * Emit Vercel Build Output API so deep links (/my-clubs, etc.) hit index.html.
+ * Root Directory for this project is `mobile`.
+ */
 const mobileRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = resolve(mobileRoot, 'dist');
-const out = resolve(mobileRoot, '.vercel-static');
+const outputRoot = resolve(mobileRoot, '.vercel/output');
+const staticDir = resolve(outputRoot, 'static');
 
 if (!existsSync(resolve(dist, 'index.html'))) {
-  console.error('Missing mobile/dist/index.html');
+  console.error('Missing mobile/dist/index.html — run: npx expo export -p web');
   process.exit(1);
 }
 
-rmSync(out, { recursive: true, force: true });
-mkdirSync(out, { recursive: true });
-cpSync(dist, out, { recursive: true });
-console.log('Vercel static ready:', out);
+rmSync(outputRoot, { recursive: true, force: true });
+mkdirSync(staticDir, { recursive: true });
+cpSync(dist, staticDir, { recursive: true });
+
+writeFileSync(
+  resolve(outputRoot, 'config.json'),
+  JSON.stringify(
+    {
+      version: 3,
+      routes: [
+        { handle: 'filesystem' },
+        { src: '/(.*)', dest: '/index.html' },
+      ],
+    },
+    null,
+    2
+  )
+);
+
+console.log('Vercel Build Output ready:', outputRoot);

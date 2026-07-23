@@ -1,13 +1,5 @@
 {
   "framework": null,
   "installCommand": "echo skip",
-  "buildCommand": "node scripts/vercel-build.mjs",
-  "outputDirectory": ".vercel-static",
-  "cleanUrls": true,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "buildCommand": "node scripts/vercel-build.mjs"
 }
