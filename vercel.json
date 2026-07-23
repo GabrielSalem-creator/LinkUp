@@ -1,9 +1,8 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "echo \"serving www\"",
-  "outputDirectory": "www",
-  "installCommand": "echo \"skip\"",
+  "installCommand": "echo skip",
+  "buildCommand": "node scripts/vercel-build.mjs",
+  "outputDirectory": ".vercel-static",
   "cleanUrls": true,
   "rewrites": [
     {

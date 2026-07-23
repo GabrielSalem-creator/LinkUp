@@ -25,6 +25,8 @@ web-build/
 *.p8
 *.p12
 *.mobileprovision
+.vercel-static/
+**/.vercel-static/
 
 # logs / OS
 *.log
