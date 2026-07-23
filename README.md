@@ -17,12 +17,20 @@ Project already pointed at `https://fra.cloud.appwrite.io/v1` / `6a61202f000e451
 
 ### Vercel deploy (important)
 
-- Production branch: **`main`**
-- Framework: **Other**
-- Output directory: **`mobile/dist`** (repo root) or **`dist`** if Root Directory = `mobile`
-- Build: `npm --prefix ./mobile run build` → `expo export -p web`
+Pushed commit `8a58aa5` includes a ready-made site in **`www/`**.
 
-Redeploy after every push to `main`.
+In Vercel → Project → **Settings → Build & Development Settings**:
+
+1. Framework Preset = **Other**
+2. Root Directory = **empty** (repo root) — click Edit and clear it if set to `mobile`
+3. Build Command = override **OFF** (or `echo serving www`)
+4. Output Directory = **`www`** (override ON if needed)
+5. Install Command = override **OFF**
+6. Production Branch = **`main`**
+
+Then **Deployments → Redeploy** the latest `main` commit (not an old one).
+
+If Root Directory is stuck on `mobile`, set Output Directory to **`dist`** instead (also committed).
 
 ---
 
