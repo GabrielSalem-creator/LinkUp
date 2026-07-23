@@ -80,7 +80,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <LinearGradient
-          colors={isDark ? ['#144F42', '#0C1017'] : ['#C8F5E8', '#F7F7F8']}
+          colors={isDark ? ['#16352C', '#0A100E'] : ['#C8EDE0', '#F2F5F4']}
           style={styles.banner}
         />
         <View style={styles.profileBlock}>
@@ -111,7 +111,7 @@ export default function ProfileScreen() {
 
           <View style={styles.actions}>
             <Pressable
-              style={[styles.actionBtn, { borderColor: colors.border }]}
+              style={[styles.actionBtn, { backgroundColor: colors.primarySoft, borderColor: colors.primarySoft }]}
               onPress={() => {
                 setEditName(user.full_name);
                 setEditBio(user.bio || '');
@@ -119,23 +119,26 @@ export default function ProfileScreen() {
                 setShowEdit(true);
               }}
             >
-              <Ionicons name="create-outline" size={16} color={colors.foreground} />
-              <Text style={[styles.actionText, { color: colors.foreground }]}>Edit</Text>
+              <Ionicons name="create-outline" size={16} color={colors.primary} />
+              <Text style={[styles.actionText, { color: colors.primary }]}>Edit profile</Text>
             </Pressable>
             <Pressable
-              style={[styles.iconAction, { borderColor: colors.border }]}
+              style={[styles.iconAction, { backgroundColor: colors.secondary, borderColor: colors.border }]}
               onPress={() => router.push('/club-portal')}
             >
-                <Ionicons name="business-outline" size={16} color={colors.foreground} />
-              </Pressable>
-            <Pressable style={[styles.iconAction, { borderColor: colors.border }]} onPress={toggle}>
-              <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={16} color={colors.foreground} />
+              <Ionicons name="storefront-outline" size={18} color={colors.foreground} />
             </Pressable>
             <Pressable
-              style={[styles.iconAction, { borderColor: colors.border }]}
+              style={[styles.iconAction, { backgroundColor: colors.secondary, borderColor: colors.border }]}
+              onPress={toggle}
+            >
+              <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={18} color={colors.foreground} />
+            </Pressable>
+            <Pressable
+              style={[styles.iconAction, { backgroundColor: colors.secondary, borderColor: colors.border }]}
               onPress={() => logout()}
             >
-              <Ionicons name="log-out-outline" size={16} color={colors.foreground} />
+              <Ionicons name="log-out-outline" size={18} color={colors.destructive} />
             </Pressable>
           </View>
         </View>
@@ -314,7 +317,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: 8, marginTop: 16 },
   actionBtn: {
     flex: 1,
-    height: 38,
+    height: 42,
     borderWidth: 1,
     borderRadius: 999,
     flexDirection: 'row',
@@ -324,9 +327,9 @@ const styles = StyleSheet.create({
   },
   actionText: { fontFamily: fonts.bodySemi, fontSize: 13 },
   iconAction: {
-    width: 38,
-    height: 38,
-    borderRadius: 999,
+    width: 42,
+    height: 42,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',

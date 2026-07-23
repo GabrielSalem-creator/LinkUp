@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import SportBadge from '@/components/ui/SportBadge';
-import { fonts } from '@/constants/theme';
+import { fonts, radius } from '@/constants/theme';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Club, ClubEvent } from '@/types';
 
@@ -23,29 +23,41 @@ export default function EventCard({ event, club, joined, joining, onJoin }: Prop
   const image = event.cover_url || club?.cover_url || club?.logo_url;
 
   return (
-    <View
-      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
-    >
+    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <Pressable
         onPress={() => router.push(`/club/${event.club_id}`)}
-        style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1 }]}
+        style={({ pressed }) => [{ opacity: pressed ? 0.94 : 1 }]}
       >
         {image ? (
           <View style={styles.imageWrap}>
             <Image source={{ uri: image }} style={styles.image} contentFit="cover" />
-            <LinearGradient colors={['transparent', 'rgba(0,0,0,0.65)']} style={StyleSheet.absoluteFill} />
+            <LinearGradient
+              colors={['transparent', 'rgba(10,16,14,0.78)']}
+              style={StyleSheet.absoluteFill}
+            />
             <View style={styles.brandRow}>
               {club?.logo_url ? (
                 <Image source={{ uri: club.logo_url }} style={styles.logo} contentFit="cover" />
-              ) : null}
-              <Text style={styles.brandName}>{club?.name || event.club_name}</Text>
+              ) : (
+                <View style={[styles.logoFallback, { backgroundColor: colors.primary }]}>
+                  <Text style={styles.logoLetter}>{(club?.name || event.club_name || '?')[0]}</Text>
+                </View>
+              )}
+              <Text style={styles.brandName} numberOfLines={1}>
+                {club?.name || event.club_name}
+              </Text>
             </View>
+            {event.sport ? (
+              <View style={styles.badgeFloat}>
+                <SportBadge sport={event.sport} size="sm" />
+              </View>
+            ) : null}
           </View>
         ) : null}
 
         <View style={styles.body}>
           <View style={styles.titleRow}>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, gap: 4 }}>
               {!image && (club || event.club_name) ? (
                 <Text style={[styles.clubTiny, { color: colors.mutedForeground }]}>
                   {club?.name || event.club_name}
@@ -53,34 +65,34 @@ export default function EventCard({ event, club, joined, joining, onJoin }: Prop
               ) : null}
               <Text style={[styles.title, { color: colors.foreground }]}>{event.title}</Text>
             </View>
-            {event.sport ? <SportBadge sport={event.sport} size="sm" /> : null}
-            <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+            {!image && event.sport ? <SportBadge sport={event.sport} size="sm" /> : null}
           </View>
 
           <View style={styles.meta}>
             {event.time ? (
-              <View style={styles.metaItem}>
-                <Ionicons name="time-outline" size={12} color={colors.mutedForeground} />
-                <Text style={[styles.metaText, { color: colors.mutedForeground }]}>{event.time}</Text>
+              <View style={[styles.metaChip, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="time-outline" size={13} color={colors.primary} />
+                <Text style={[styles.metaText, { color: colors.foreground }]}>{event.time}</Text>
               </View>
             ) : null}
             {event.meeting_point ? (
-              <View style={styles.metaItem}>
-                <Ionicons name="location-outline" size={12} color={colors.mutedForeground} />
-                <Text style={[styles.metaText, { color: colors.mutedForeground }]} numberOfLines={1}>
+              <View style={[styles.metaChip, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="location-outline" size={13} color={colors.primary} />
+                <Text style={[styles.metaText, { color: colors.foreground }]} numberOfLines={1}>
                   {event.meeting_point}
                 </Text>
               </View>
             ) : null}
             {event.distance_km ? (
-              <Text style={[styles.metaText, { color: colors.mutedForeground, fontFamily: fonts.bodySemi }]}>
-                {event.distance_km} km
-              </Text>
+              <View style={[styles.metaChip, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="speedometer-outline" size={13} color={colors.primary} />
+                <Text style={[styles.metaText, { color: colors.foreground }]}>{event.distance_km} km</Text>
+              </View>
             ) : null}
             {event.max_participants ? (
-              <View style={styles.metaItem}>
-                <Ionicons name="people-outline" size={12} color={colors.mutedForeground} />
-                <Text style={[styles.metaText, { color: colors.mutedForeground }]}>
+              <View style={[styles.metaChip, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="people-outline" size={13} color={colors.primary} />
+                <Text style={[styles.metaText, { color: colors.foreground }]}>
                   {event.max_participants} spots
                 </Text>
               </View>
@@ -94,20 +106,33 @@ export default function EventCard({ event, club, joined, joining, onJoin }: Prop
           <Pressable
             onPress={onJoin}
             disabled={joined || joining}
-            style={[
+            style={({ pressed }) => [
               styles.joinBtn,
               {
-                backgroundColor: joined ? colors.secondary : colors.primary,
-                opacity: joining ? 0.7 : 1,
+                backgroundColor: joined ? colors.primarySoft : colors.primary,
+                opacity: joining ? 0.7 : pressed ? 0.9 : 1,
               },
             ]}
           >
             {joining ? (
-              <ActivityIndicator color={joined ? colors.foreground : '#fff'} />
+              <ActivityIndicator color={joined ? colors.primary : colors.primaryForeground} />
             ) : (
-              <Text style={{ color: joined ? colors.foreground : '#fff', fontFamily: fonts.bodySemi, fontSize: 13 }}>
-                {joined ? 'Joined' : 'Join event'}
-              </Text>
+              <>
+                <Ionicons
+                  name={joined ? 'checkmark-circle' : 'add-circle-outline'}
+                  size={18}
+                  color={joined ? colors.primary : colors.primaryForeground}
+                />
+                <Text
+                  style={{
+                    color: joined ? colors.primary : colors.primaryForeground,
+                    fontFamily: fonts.bodySemi,
+                    fontSize: 14,
+                  }}
+                >
+                  {joined ? 'You\'re in' : 'Join event'}
+                </Text>
+              </>
             )}
           </Pressable>
         </View>
@@ -118,35 +143,55 @@ export default function EventCard({ event, club, joined, joining, onJoin }: Prop
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
+    borderRadius: radius.lg,
     borderWidth: 1,
     overflow: 'hidden',
-    marginBottom: 12,
+    marginBottom: 14,
   },
-  imageWrap: { height: 140 },
+  imageWrap: { height: 156 },
   image: { width: '100%', height: '100%' },
   brandRow: {
     position: 'absolute',
     left: 12,
-    bottom: 10,
+    bottom: 12,
+    right: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  logo: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: 'rgba(255,255,255,0.35)' },
-  brandName: { color: '#fff', fontFamily: fonts.bodySemi, fontSize: 12 },
-  body: { padding: 14, paddingBottom: 8 },
-  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 8 },
-  clubTiny: { fontFamily: fonts.bodyMed, fontSize: 10, marginBottom: 2 },
-  title: { fontFamily: fonts.headingSemi, fontSize: 15, lineHeight: 20 },
-  meta: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: 160 },
-  metaText: { fontFamily: fonts.body, fontSize: 12 },
-  joinWrap: { paddingHorizontal: 14, paddingBottom: 14 },
-  joinBtn: {
-    height: 40,
-    borderRadius: 999,
+  logo: { width: 32, height: 32, borderRadius: 10, borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)' },
+  logoFallback: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  logoLetter: { color: '#fff', fontFamily: fonts.headingSemi, fontSize: 14 },
+  brandName: { color: '#fff', fontFamily: fonts.bodySemi, fontSize: 13, flex: 1 },
+  badgeFloat: { position: 'absolute', top: 12, right: 12 },
+  body: { padding: 14, gap: 10 },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  clubTiny: { fontFamily: fonts.bodyMed, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.4 },
+  title: { fontFamily: fonts.headingSemi, fontSize: 16, lineHeight: 22, letterSpacing: -0.2 },
+  meta: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  metaChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    maxWidth: '100%',
+  },
+  metaText: { fontFamily: fonts.bodyMed, fontSize: 12 },
+  joinWrap: { paddingHorizontal: 14, paddingBottom: 14 },
+  joinBtn: {
+    height: 44,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
 });

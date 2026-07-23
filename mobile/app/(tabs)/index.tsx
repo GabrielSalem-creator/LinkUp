@@ -16,7 +16,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import EventCard from '@/components/events/EventCard';
 import EmptyState from '@/components/ui/EmptyState';
-import { SPORTS, fonts } from '@/constants/theme';
+import IconButton from '@/components/ui/IconButton';
+import ScreenHeader from '@/components/ui/ScreenHeader';
+import { SPORTS, fonts, radius } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/ThemeContext';
@@ -140,27 +142,21 @@ export default function EventsScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.brand, { color: colors.primary }]}>LinkUp</Text>
-        <View style={styles.headerActions}>
-          <Pressable style={styles.iconBtn} onPress={() => router.push('/people')}>
-              <Ionicons name="notifications-outline" size={20} color={colors.foreground} />
-              {pending > 0 ? (
-                <View style={[styles.badge, { backgroundColor: colors.destructive }]}>
-                  <Text style={styles.badgeText}>{pending > 9 ? '9+' : pending}</Text>
-                </View>
-              ) : null}
-            </Pressable>
-          <Pressable style={styles.iconBtn} onPress={() => setShowFilters(true)}>
-            <Ionicons name="options-outline" size={20} color={colors.foreground} />
-            {activeFilters > 0 ? (
-              <View style={[styles.badge, { backgroundColor: colors.primary }]}>
-                <Text style={styles.badgeText}>{activeFilters}</Text>
-              </View>
-            ) : null}
-          </Pressable>
-        </View>
-      </View>
+      <ScreenHeader
+        title="LinkUp"
+        subtitle="Lebanon clubs · upcoming sessions"
+        large
+        right={
+          <>
+            <IconButton
+              name="people-outline"
+              onPress={() => router.push('/people')}
+              badge={pending > 0}
+            />
+            <IconButton name="options-outline" onPress={() => setShowFilters(true)} badge={activeFilters > 0} />
+          </>
+        }
+      />
 
       {loading ? (
         <View style={styles.center}>
@@ -219,7 +215,13 @@ export default function EventsScreen() {
                       },
                     ]}
                   >
-                    <Text style={{ color: on ? '#fff' : colors.foreground, fontFamily: fonts.bodyMed, fontSize: 12 }}>
+                    <Text
+                      style={{
+                        color: on ? colors.primaryForeground : colors.foreground,
+                        fontFamily: fonts.bodyMed,
+                        fontSize: 12,
+                      }}
+                    >
                       {sport}
                     </Text>
                   </Pressable>
@@ -243,7 +245,13 @@ export default function EventsScreen() {
                       },
                     ]}
                   >
-                    <Text style={{ color: on ? '#fff' : colors.foreground, fontFamily: fonts.bodyMed, fontSize: 12 }}>
+                    <Text
+                      style={{
+                        color: on ? colors.primaryForeground : colors.foreground,
+                        fontFamily: fonts.bodyMed,
+                        fontSize: 12,
+                      }}
+                    >
                       {city}
                     </Text>
                   </Pressable>
@@ -265,7 +273,7 @@ export default function EventsScreen() {
                 onPress={() => setShowFilters(false)}
                 style={[styles.btnPrimary, { backgroundColor: colors.primary }]}
               >
-                <Text style={{ color: '#fff', fontFamily: fonts.bodySemi }}>Apply</Text>
+                <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>Apply</Text>
               </Pressable>
             </View>
           </View>
@@ -277,48 +285,42 @@ export default function EventsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  header: {
-    height: 56,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  brand: { fontFamily: fonts.heading, fontSize: 22 },
-  headerActions: { flexDirection: 'row', gap: 4 },
-  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  badge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  badgeText: { color: '#fff', fontSize: 9, fontFamily: fonts.bodyBold },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  list: { padding: 16 },
+  list: { padding: 16, paddingBottom: 32 },
   dayBlock: { marginBottom: 8 },
-  dayLabel: { fontFamily: fonts.headingSemi, fontSize: 16, marginBottom: 10 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  dayLabel: {
+    fontFamily: fonts.headingSemi,
+    fontSize: 15,
+    marginBottom: 10,
+    letterSpacing: -0.2,
+  },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(10,16,14,0.45)', justifyContent: 'flex-end' },
   sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36 },
   sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   sheetTitle: { fontFamily: fonts.headingSemi, fontSize: 18 },
-  filterLabel: { fontFamily: fonts.bodySemi, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 },
+  filterLabel: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 8,
+  },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  chip: { borderWidth: 1, borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 7 },
   sheetActions: { flexDirection: 'row', gap: 10, marginTop: 24 },
   btnSecondary: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 999,
-    height: 44,
+    borderRadius: radius.full,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnPrimary: { flex: 1, borderRadius: 999, height: 44, alignItems: 'center', justifyContent: 'center' },
+  btnPrimary: {
+    flex: 1,
+    borderRadius: radius.full,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

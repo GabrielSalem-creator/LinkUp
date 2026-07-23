@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { fonts } from '@/constants/theme';
+import { fonts, radius } from '@/constants/theme';
 import { useTheme } from '@/lib/ThemeContext';
 
 type Props = {
@@ -16,8 +16,8 @@ export default function EmptyState({ icon = 'compass-outline', title, descriptio
   const { colors } = useTheme();
   return (
     <View style={styles.wrap}>
-      <View style={[styles.iconWrap, { backgroundColor: colors.secondary }]}>
-        <Ionicons name={icon} size={28} color={colors.mutedForeground} />
+      <View style={[styles.iconWrap, { backgroundColor: colors.primarySoft }]}>
+        <Ionicons name={icon} size={30} color={colors.primary} />
       </View>
       <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
       {description ? (
@@ -29,16 +29,23 @@ export default function EmptyState({ icon = 'compass-outline', title, descriptio
 }
 
 const styles = StyleSheet.create({
-  wrap: { alignItems: 'center', paddingVertical: 48, paddingHorizontal: 28 },
+  wrap: { alignItems: 'center', paddingVertical: 56, paddingHorizontal: 32 },
   iconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+    width: 68,
+    height: 68,
+    borderRadius: radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
-  title: { fontFamily: fonts.headingSemi, fontSize: 17, textAlign: 'center' },
-  desc: { fontFamily: fonts.body, fontSize: 13, textAlign: 'center', marginTop: 6, lineHeight: 18 },
-  action: { marginTop: 16 },
+  title: { fontFamily: fonts.headingSemi, fontSize: 18, textAlign: 'center', letterSpacing: -0.2 },
+  desc: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 20,
+    maxWidth: 280,
+  },
+  action: { marginTop: 20 },
 });
