@@ -1,0 +1,43 @@
+{
+  "name": "MerchItem",
+  "type": "object",
+  "properties": {
+    "club_id": {
+      "type": "string"
+    },
+    "club_name": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "price_usd": {
+      "type": "number"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "shirt",
+        "shorts",
+        "cap",
+        "accessories",
+        "other"
+      ]
+    },
+    "in_stock": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "club_id",
+    "name",
+    "price_usd"
+  ]
+}

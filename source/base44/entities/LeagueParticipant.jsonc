@@ -1,0 +1,60 @@
+{
+  "name": "LeagueParticipant",
+  "type": "object",
+  "properties": {
+    "league_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "total_distance_km": {
+      "type": "number",
+      "default": 0
+    },
+    "total_activities": {
+      "type": "number",
+      "default": 0
+    },
+    "rank": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "league_id",
+    "user_email"
+  ],
+  "rls": {
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "name": "Post",
+  "type": "object",
+  "properties": {
+    "author_email": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_avatar": {
+      "type": "string"
+    },
+    "club_id": {
+      "type": "string",
+      "description": "If posted by a club"
+    },
+    "club_name": {
+      "type": "string"
+    },
+    "is_club_post": {
+      "type": "boolean",
+      "default": false
+    },
+    "content": {
+      "type": "string",
+      "description": "Post text"
+    },
+    "image_url": {
+      "type": "string"
+    },
+    "post_type": {
+      "type": "string",
+      "enum": [
+        "photo",
+        "activity",
+        "announcement",
+        "merch"
+      ],
+      "default": "photo"
+    },
+    "likes_count": {
+      "type": "number",
+      "default": 0
+    },
+    "sport_tag": {
+      "type": "string",
+      "enum": [
+        "running",
+        "biking",
+        "swimming"
+      ]
+    }
+  },
+  "required": [
+    "author_email",
+    "content"
+  ],
+  "rls": {
+    "create": {
+      "data.author_email": "{{user.email}}"
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "data.author_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.author_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

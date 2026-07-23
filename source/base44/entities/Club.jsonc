@@ -1,0 +1,133 @@
+{
+  "name": "Club",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Club name"
+    },
+    "slug": {
+      "type": "string",
+      "description": "URL-friendly slug"
+    },
+    "sport": {
+      "type": "string",
+      "enum": [
+        "running",
+        "biking",
+        "swimming",
+        "walking",
+        "hyrox",
+        "triathlon",
+        "crossfit",
+        "yoga",
+        "hiking",
+        "other"
+      ],
+      "description": "Primary sport"
+    },
+    "city": {
+      "type": "string",
+      "description": "City in Lebanon"
+    },
+    "description": {
+      "type": "string",
+      "description": "Club description"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Club logo image URL"
+    },
+    "cover_url": {
+      "type": "string",
+      "description": "Club cover image URL"
+    },
+    "owner_email": {
+      "type": "string",
+      "description": "Email of the club owner/admin"
+    },
+    "club_password": {
+      "type": "string",
+      "description": "Password to access the Club Portal"
+    },
+    "member_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of members"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a verified official club"
+    },
+    "subscription_status": {
+      "type": "string",
+      "enum": [
+        "inactive",
+        "active",
+        "cancelled"
+      ],
+      "default": "inactive",
+      "description": "Club subscription status"
+    },
+    "subscription_started": {
+      "type": "string",
+      "format": "date",
+      "description": "When subscription started"
+    },
+    "instagram_link": {
+      "type": "string",
+      "description": "Instagram profile URL"
+    },
+    "social_links": {
+      "type": "object",
+      "properties": {
+        "instagram": {
+          "type": "string"
+        },
+        "facebook": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "sport",
+    "city"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}",
+      "data.owner_email": "{{user.email}}"
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.owner_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

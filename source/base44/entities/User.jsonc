@@ -1,0 +1,51 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "user"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "favorite_sport": {
+      "type": "string",
+      "enum": [
+        "running",
+        "biking",
+        "swimming"
+      ]
+    },
+    "total_distance_km": {
+      "type": "number",
+      "default": 0
+    },
+    "total_activities": {
+      "type": "number",
+      "default": 0
+    },
+    "current_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "longest_streak": {
+      "type": "number",
+      "default": 0
+    },
+    "last_activity_date": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}

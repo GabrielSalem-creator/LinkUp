@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# env / secrets — never commit API keys
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# builds
+dist/
+web-build/
+.expo/
+**/dist/
+**/.expo/
+
+# logs / OS
+*.log
+.DS_Store
+Thumbs.db
+
+# typescript
+*.tsbuildinfo
+expo-env.d.ts
+
+# native
+**/ios/
+**/android/
+*.jks
+*.p8
+*.p12
+*.mobileprovision

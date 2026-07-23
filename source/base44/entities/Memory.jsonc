@@ -1,0 +1,85 @@
+{
+  "name": "Memory",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "event_title": {
+      "type": "string"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "club_name": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "sport": {
+      "type": "string",
+      "enum": [
+        "running",
+        "biking",
+        "swimming",
+        "walking",
+        "hyrox",
+        "triathlon",
+        "crossfit",
+        "yoga",
+        "hiking",
+        "other"
+      ]
+    }
+  },
+  "required": [
+    "user_email",
+    "photo_url"
+  ],
+  "rls": {
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "name": "Activity",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "User who logged this activity"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Display name"
+    },
+    "club_id": {
+      "type": "string",
+      "description": "Associated club ID"
+    },
+    "club_name": {
+      "type": "string",
+      "description": "Club name"
+    },
+    "sport": {
+      "type": "string",
+      "enum": [
+        "running",
+        "biking",
+        "swimming"
+      ]
+    },
+    "distance_km": {
+      "type": "number",
+      "description": "Distance in kilometers"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Duration in minutes"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Activity date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Optional activity photo"
+    }
+  },
+  "required": [
+    "user_email",
+    "sport",
+    "distance_km",
+    "date"
+  ]
+}

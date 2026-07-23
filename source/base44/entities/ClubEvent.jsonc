@@ -1,0 +1,93 @@
+{
+  "name": "ClubEvent",
+  "type": "object",
+  "properties": {
+    "club_id": {
+      "type": "string"
+    },
+    "club_name": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "sport": {
+      "type": "string",
+      "enum": [
+        "running",
+        "biking",
+        "swimming",
+        "walking",
+        "hyrox",
+        "triathlon",
+        "crossfit",
+        "yoga",
+        "hiking",
+        "other"
+      ]
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "time": {
+      "type": "string",
+      "description": "e.g. 6:00 AM"
+    },
+    "meeting_point": {
+      "type": "string"
+    },
+    "distance_km": {
+      "type": "number"
+    },
+    "cover_url": {
+      "type": "string"
+    },
+    "attendance_password": {
+      "type": "string",
+      "description": "Password (min 4 chars) that creator shares after event to confirm attendance"
+    },
+    "max_participants": {
+      "type": "number",
+      "description": "Maximum number of participants allowed. Leave empty for unlimited."
+    }
+  },
+  "required": [
+    "club_id",
+    "title",
+    "date"
+  ],
+  "rls": {
+    "create": {
+      "created_by": "{{user.email}}"
+    },
+    "read": true,
+    "update": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

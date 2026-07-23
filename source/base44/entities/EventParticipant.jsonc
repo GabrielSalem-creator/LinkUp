@@ -1,0 +1,64 @@
+{
+  "name": "EventParticipant",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "description": "ClubEvent ID"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "club_id": {
+      "type": "string"
+    },
+    "event_title": {
+      "type": "string"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "event_time": {
+      "type": "string"
+    },
+    "club_name": {
+      "type": "string"
+    },
+    "meeting_point": {
+      "type": "string"
+    },
+    "distance_km": {
+      "type": "number"
+    },
+    "sport": {
+      "type": "string",
+      "enum": [
+        "running",
+        "biking",
+        "swimming"
+      ]
+    }
+  },
+  "required": [
+    "event_id",
+    "user_email"
+  ],
+  "rls": {
+    "create": {
+      "data.user_email": "{{user.email}}"
+    },
+    "read": {
+      "data.user_email": "{{user.email}}"
+    },
+    "update": {
+      "data.user_email": "{{user.email}}"
+    },
+    "delete": {
+      "data.user_email": "{{user.email}}"
+    }
+  }
+}
