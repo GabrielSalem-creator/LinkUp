@@ -22,15 +22,15 @@ Pushed commit `8a58aa5` includes a ready-made site in **`www/`**.
 In Vercel → Project → **Settings → Build & Development Settings**:
 
 1. Framework Preset = **Other**
-2. Root Directory = **empty** (repo root) — click Edit and clear it if set to `mobile`
-3. Build Command = override **OFF** (or `echo serving www`)
-4. Output Directory = **`www`** (override ON if needed)
-5. Install Command = override **OFF**
+2. Root Directory = **empty** (repo root) — clear it if set to `mobile`
+3. Build Command override = **OFF** (uses `node scripts/vercel-build.mjs`)
+4. Output Directory override = **OFF** (uses `.vercel-static`) **or** set to `.vercel-static`
+5. Install Command override = **OFF**
 6. Production Branch = **`main`**
 
-Then **Deployments → Redeploy** the latest `main` commit (not an old one).
+Then **Deployments → Redeploy** latest `main` with **“Use existing Build Cache” unchecked**.
 
-If Root Directory is stuck on `mobile`, set Output Directory to **`dist`** instead (also committed).
+`vercel.json` now copies `www/` into `.vercel-static` during build (the old `echo` build left the output folder empty → 404).
 
 ---
 
