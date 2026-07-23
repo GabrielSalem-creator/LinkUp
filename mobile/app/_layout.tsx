@@ -76,14 +76,14 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const { colors, isDark } = useTheme();
-  const { isLoading, user, usingFallback } = useAuth();
+  const { isLoading, user, usingFallback, connectionError, loginDemo } = useAuth();
 
   if (isLoading) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={{ marginTop: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
-          Connecting…
+          Connecting to Appwrite…
         </Text>
       </View>
     );
@@ -97,9 +97,15 @@ function RootLayoutNav() {
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       {usingFallback ? (
-        <View style={{ backgroundColor: '#F59E0B', paddingVertical: 6, paddingHorizontal: 12 }}>
+        <View style={{ backgroundColor: '#F59E0B', paddingVertical: 8, paddingHorizontal: 12 }}>
           <Text style={{ color: '#111', fontFamily: fonts.bodyMed, fontSize: 11, textAlign: 'center' }}>
-            Offline demo data (Appwrite unreachable). Events still show.
+            Live login issue{connectionError ? `: ${connectionError}` : ''}. Tap to retry.
+          </Text>
+          <Text
+            onPress={() => loginDemo().catch(() => undefined)}
+            style={{ color: '#111', fontFamily: fonts.bodySemi, fontSize: 12, textAlign: 'center', marginTop: 4 }}
+          >
+            Reconnect to Appwrite
           </Text>
         </View>
       ) : null}

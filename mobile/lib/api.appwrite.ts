@@ -10,7 +10,7 @@ import {
   restorePersistedSession,
 } from '@/lib/appwrite';
 import {
-  createAnonymousSessionRest,
+  createDemoSessionRest,
   createEmailSessionRest,
   getAccountSafe,
 } from '@/lib/appwriteAuth';
@@ -117,14 +117,17 @@ export const appwriteApi = {
     async loginDemo(): Promise<User> {
       try {
         const existing = await getAccountSafe();
-        return ensureProfile({ ...existing, name: existing.name || 'Demo Athlete' });
+        if (existing.email === 'demo@linkup.app' || existing.email) {
+          return ensureProfile({ ...existing, name: existing.name || 'Demo Athlete' });
+        }
       } catch {
         /* need new session */
       }
 
-      await createAnonymousSessionRest();
+      // Use stable demo account (not anonymous) so web/Vercel always get a session secret
+      await createDemoSessionRest();
       const authUser = await getAccountSafe();
-      return ensureProfile({ ...authUser, name: 'Demo Athlete' });
+      return ensureProfile({ ...authUser, name: authUser.name || 'Demo Athlete' });
     },
 
     async register(email: string, password: string, name: string): Promise<User> {

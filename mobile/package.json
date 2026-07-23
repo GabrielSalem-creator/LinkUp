@@ -45,7 +45,8 @@
     "build:web": "expo export -p web",
     "vercel-build": "expo export -p web",
     "setup:appwrite": "node scripts/setup-appwrite.mjs",
-    "seed:appwrite": "node scripts/seed-appwrite.mjs"
+    "seed:appwrite": "node scripts/seed-appwrite.mjs",
+    "ensure:demo": "node scripts/ensure-demo-user.mjs"
   },
   "private": true
 }

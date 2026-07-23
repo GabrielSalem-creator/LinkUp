@@ -71,7 +71,10 @@ export default function LoginScreen() {
           One community for Lebanon&apos;s athletes
         </Text>
         <Text style={[styles.badge, { color: colors.mutedForeground }]}>
-          Backend: {isAppwrite ? 'Appwrite (FRA)' : 'Local mock'}
+          Backend: {isAppwrite ? 'Appwrite (FRA) live' : 'Local mock'}
+        </Text>
+        <Text style={[styles.badge, { color: colors.mutedForeground, marginBottom: 16 }]}>
+          Demo: demo@linkup.app / LinkUpDemo123!
         </Text>
 
         {mode === 'register' ? (
@@ -125,7 +128,9 @@ export default function LoginScreen() {
           disabled={busy}
           style={[styles.secondary, { borderColor: colors.border }]}
         >
-          <Text style={{ color: colors.foreground, fontFamily: fonts.bodySemi }}>Continue as guest (demo)</Text>
+          <Text style={{ color: colors.foreground, fontFamily: fonts.bodySemi }}>
+            Enter live demo (Appwrite)
+          </Text>
         </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
