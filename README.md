@@ -19,18 +19,18 @@ Project already pointed at `https://fra.cloud.appwrite.io/v1` / `6a61202f000e451
 
 Pushed commit `8a58aa5` includes a ready-made site in **`www/`**.
 
-In Vercel → Project → **Settings → Build & Development Settings**:
+In Vercel → Project → **Settings**:
 
-1. Framework Preset = **Other**
-2. Root Directory = **empty** (repo root) — clear it if set to `mobile`
-3. Build Command override = **OFF** (uses `node scripts/vercel-build.mjs`)
-4. Output Directory override = **OFF** (uses `.vercel-static`) **or** set to `.vercel-static`
+1. **Root Directory** = **`mobile`** (required)
+2. Framework Preset = **Other**
+3. Build Command override = **OFF**
+4. Output Directory override = **OFF** (must be `.vercel-static`, not `www` / `dist` / `mobile/dist`)
 5. Install Command override = **OFF**
 6. Production Branch = **`main`**
 
-Then **Deployments → Redeploy** latest `main` with **“Use existing Build Cache” unchecked**.
+Then Redeploy latest `main` with **Use existing Build Cache** unchecked.
 
-`vercel.json` now copies `www/` into `.vercel-static` during build (the old `echo` build left the output folder empty → 404).
+Do **not** set Root Directory to `source` or leave a custom Output Directory like `www`.
 
 ---
 
