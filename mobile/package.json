@@ -43,6 +43,7 @@
     "web": "expo start --web",
     "build": "expo export -p web",
     "build:web": "expo export -p web",
+    "vercel-build": "expo export -p web",
     "setup:appwrite": "node scripts/setup-appwrite.mjs",
     "seed:appwrite": "node scripts/seed-appwrite.mjs"
   },

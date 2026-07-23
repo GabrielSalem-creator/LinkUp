@@ -15,11 +15,12 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
 import 'react-native-reanimated';
 
 import LoginScreen from '@/components/auth/LoginScreen';
+import { fonts } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { AppThemeProvider, useTheme } from '@/lib/ThemeContext';
 
@@ -29,10 +30,10 @@ export const unstable_settings = {
   initialRouteName: '(tabs)',
 };
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
@@ -41,16 +42,28 @@ export default function RootLayout() {
     SpaceGrotesk_600SemiBold,
     SpaceGrotesk_700Bold,
   });
+  const [fontTimeout, setFontTimeout] = useState(false);
 
   useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+    const t = setTimeout(() => setFontTimeout(true), 2500);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
-    if (loaded) SplashScreen.hideAsync();
-  }, [loaded]);
+    if (fontsLoaded || fontError || fontTimeout) {
+      SplashScreen.hideAsync().catch(() => undefined);
+    }
+  }, [fontsLoaded, fontError, fontTimeout]);
 
-  if (!loaded) return null;
+  // Never stay on a blank screen waiting for fonts
+  if (!fontsLoaded && !fontError && !fontTimeout) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F7F7F8' }}>
+        <ActivityIndicator color="#129B7A" size="large" />
+        <Text style={{ marginTop: 12, color: '#6B7280', fontFamily: 'System' }}>Loading LinkUp…</Text>
+      </View>
+    );
+  }
 
   return (
     <AppThemeProvider>
@@ -63,12 +76,15 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const { colors, isDark } = useTheme();
-  const { isLoading, user } = useAuth();
+  const { isLoading, user, usingFallback } = useAuth();
 
   if (isLoading) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
         <ActivityIndicator color={colors.primary} size="large" />
+        <Text style={{ marginTop: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
+          Connecting…
+        </Text>
       </View>
     );
   }
@@ -80,6 +96,13 @@ function RootLayoutNav() {
   return (
     <>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      {usingFallback ? (
+        <View style={{ backgroundColor: '#F59E0B', paddingVertical: 6, paddingHorizontal: 12 }}>
+          <Text style={{ color: '#111', fontFamily: fonts.bodyMed, fontSize: 11, textAlign: 'center' }}>
+            Offline demo data (Appwrite unreachable). Events still show.
+          </Text>
+        </View>
+      ) : null}
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.background },

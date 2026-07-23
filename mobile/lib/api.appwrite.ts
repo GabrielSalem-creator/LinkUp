@@ -3,9 +3,17 @@ import {
   ID,
   Query,
   account,
+  clearPersistedSession,
+  client,
   databases,
   dbId,
+  restorePersistedSession,
 } from '@/lib/appwrite';
+import {
+  createAnonymousSessionRest,
+  createEmailSessionRest,
+  getAccountSafe,
+} from '@/lib/appwriteAuth';
 import {
   mapActivity,
   mapClub,
@@ -44,6 +52,20 @@ async function listAll(collectionId: string, queries: string[] = []) {
   return res.documents;
 }
 
+function localUserFromAuth(authUser: { $id: string; email?: string; name?: string }): User {
+  const email = authUser.email || `guest-${authUser.$id.slice(0, 8)}@linkup.app`;
+  return {
+    id: authUser.$id,
+    email,
+    full_name: authUser.name || 'LinkUp Athlete',
+    city: 'Beirut',
+    total_distance_km: 0,
+    total_activities: 0,
+    current_streak: 0,
+    longest_streak: 0,
+  };
+}
+
 async function ensureProfile(authUser: {
   $id: string;
   email?: string;
@@ -58,21 +80,26 @@ async function ensureProfile(authUser: {
     });
     return mapUser(existing as never, email);
   } catch {
-    const created = await databases.createDocument({
-      databaseId: dbId,
-      collectionId: COLLECTION.profiles,
-      documentId: authUser.$id,
-      data: {
-        email,
-        full_name: authUser.name || 'LinkUp Athlete',
-        city: 'Beirut',
-        total_distance_km: 0,
-        total_activities: 0,
-        current_streak: 0,
-        longest_streak: 0,
-      },
-    });
-    return mapUser(created as never, email);
+    try {
+      const created = await databases.createDocument({
+        databaseId: dbId,
+        collectionId: COLLECTION.profiles,
+        documentId: authUser.$id,
+        data: {
+          email,
+          full_name: authUser.name || 'LinkUp Athlete',
+          city: 'Beirut',
+          total_distance_km: 0,
+          total_activities: 0,
+          current_streak: 0,
+          longest_streak: 0,
+        },
+      });
+      return mapUser(created as never, email);
+    } catch {
+      // Still let the app open even if profile write is blocked
+      return localUserFromAuth(authUser);
+    }
   }
 }
 
@@ -80,7 +107,7 @@ export const appwriteApi = {
   auth: {
     async me(): Promise<User | null> {
       try {
-        const authUser = await account.get();
+        const authUser = await getAccountSafe();
         return ensureProfile(authUser);
       } catch {
         return null;
@@ -89,12 +116,14 @@ export const appwriteApi = {
 
     async loginDemo(): Promise<User> {
       try {
-        await account.deleteSession({ sessionId: 'current' });
+        const existing = await getAccountSafe();
+        return ensureProfile({ ...existing, name: existing.name || 'Demo Athlete' });
       } catch {
-        /* no session */
+        /* need new session */
       }
-      await account.createAnonymousSession();
-      const authUser = await account.get();
+
+      await createAnonymousSessionRest();
+      const authUser = await getAccountSafe();
       return ensureProfile({ ...authUser, name: 'Demo Athlete' });
     },
 
@@ -105,27 +134,30 @@ export const appwriteApi = {
         password,
         name,
       });
-      await account.createEmailPasswordSession({ email, password });
-      const authUser = await account.get();
+      await createEmailSessionRest(email, password);
+      const authUser = await getAccountSafe();
       return ensureProfile({ ...authUser, name });
     },
 
     async login(email: string, password: string): Promise<User> {
-      await account.createEmailPasswordSession({ email, password });
-      const authUser = await account.get();
+      await createEmailSessionRest(email, password);
+      const authUser = await getAccountSafe();
       return ensureProfile(authUser);
     },
 
     async logout(): Promise<void> {
       try {
+        await restorePersistedSession();
         await account.deleteSession({ sessionId: 'current' });
       } catch {
         /* ignore */
       }
+      await clearPersistedSession();
+      client.setSession('');
     },
 
     async updateProfile(patch: Partial<User>): Promise<User> {
-      const authUser = await account.get();
+      const authUser = await getAccountSafe();
       const data: Record<string, unknown> = {};
       if (patch.full_name != null) data.full_name = patch.full_name;
       if (patch.bio != null) data.bio = patch.bio;
@@ -141,13 +173,17 @@ export const appwriteApi = {
         }
       }
 
-      const updated = await databases.updateDocument({
-        databaseId: dbId,
-        collectionId: COLLECTION.profiles,
-        documentId: authUser.$id,
-        data,
-      });
-      return mapUser(updated as never, authUser.email);
+      try {
+        const updated = await databases.updateDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.profiles,
+          documentId: authUser.$id,
+          data,
+        });
+        return mapUser(updated as never, authUser.email);
+      } catch {
+        return { ...localUserFromAuth(authUser), ...patch, id: authUser.$id };
+      }
     },
   },
 
@@ -226,7 +262,7 @@ export const appwriteApi = {
           data: { member_count: Number(club.member_count || 0) + 1 },
         });
       } catch {
-        /* ignore count bump failures */
+        /* ignore */
       }
       return mapMembership(created as never);
     },

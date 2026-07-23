@@ -34,7 +34,7 @@ function toDateStr(date: Date) {
 
 export default function EventsScreen() {
   const { colors } = useTheme();
-  const { user } = useAuth();
+  const { user, usingFallback } = useAuth();
   const router = useRouter();
   const [events, setEvents] = useState<ClubEvent[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
@@ -46,15 +46,24 @@ export default function EventsScreen() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [ev, cl] = await Promise.all([api.events.list(), api.clubs.list()]);
-    setEvents(ev);
-    setClubs(cl);
-    if (user?.email) {
-      const p = await api.friendships.pendingFor(user.email);
-      setPending(p.length);
+    try {
+      const [ev, cl] = await Promise.all([api.events.list(), api.clubs.list()]);
+      setEvents(ev);
+      setClubs(cl);
+      if (user?.email) {
+        const p = await api.friendships.pendingFor(user.email).catch(() => []);
+        setPending(p.length);
+      }
+    } catch (e) {
+      console.warn('Events load failed, using offline data', e);
+      const { mockApi } = await import('@/lib/api.mock');
+      const [ev, cl] = await Promise.all([mockApi.events.list(), mockApi.clubs.list()]);
+      setEvents(ev);
+      setClubs(cl);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [user?.email]);
+  }, [user?.email, usingFallback]);
 
   useEffect(() => {
     load();

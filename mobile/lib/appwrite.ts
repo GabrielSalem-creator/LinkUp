@@ -1,8 +1,11 @@
 import 'react-native-url-polyfill/auto';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Account, Client, Databases, ID, Permission, Query, Role, Storage } from 'appwrite';
 
 import { config } from '@/lib/config';
+
+const SESSION_KEY = 'linkup_appwrite_session';
 
 export const client = new Client()
   .setEndpoint(config.appwriteEndpoint)
@@ -32,3 +35,30 @@ export const COLLECTION = {
 } as const;
 
 export type CollectionKey = keyof typeof COLLECTION;
+
+/** Persist session secret so web/Vercel work without third-party cookies. */
+export async function persistSession(secret: string | undefined | null) {
+  if (!secret) return;
+  client.setSession(secret);
+  await AsyncStorage.setItem(SESSION_KEY, secret);
+}
+
+export async function clearPersistedSession() {
+  try {
+    await AsyncStorage.removeItem(SESSION_KEY);
+  } catch {
+    /* ignore */
+  }
+  client.setSession('');
+}
+
+export async function restorePersistedSession(): Promise<boolean> {
+  try {
+    const secret = await AsyncStorage.getItem(SESSION_KEY);
+    if (!secret) return false;
+    client.setSession(secret);
+    return true;
+  } catch {
+    return false;
+  }
+}
