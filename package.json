@@ -2,7 +2,10 @@
   "name": "linkup",
   "private": true,
   "scripts": {
-    "vercel-build": "npm install --prefix mobile && npx --prefix mobile expo export -p web",
-    "build": "npm run vercel-build"
+    "build": "npm --prefix ./mobile run build",
+    "vercel-build": "npm --prefix ./mobile run build"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

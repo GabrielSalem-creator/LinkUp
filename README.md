@@ -15,6 +15,15 @@ Open in Expo Go, a simulator, or press `w` for web.
 **Appwrite + Vercel publish:** follow [`mobile/APPWRITE_AND_VERCEL.md`](mobile/APPWRITE_AND_VERCEL.md)  
 Project already pointed at `https://fra.cloud.appwrite.io/v1` / `6a61202f000e451a56a8`.
 
+### Vercel deploy (important)
+
+- Production branch: **`main`**
+- Framework: **Other**
+- Output directory: **`mobile/dist`** (repo root) or **`dist`** if Root Directory = `mobile`
+- Build: `npm --prefix ./mobile run build` → `expo export -p web`
+
+Redeploy after every push to `main`.
+
 ---
 
 # One_Community — Project Export for Claude Code

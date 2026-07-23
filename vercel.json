@@ -1,24 +1,14 @@
 {
-  "buildCommand": "npm run vercel-build",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm --prefix ./mobile install",
+  "buildCommand": "npm --prefix ./mobile run build",
   "outputDirectory": "mobile/dist",
-  "installCommand": "npm install --prefix mobile",
   "framework": null,
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/:path*",
-      "destination": "/"
-    }
-  ],
-  "headers": [
-    {
       "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
+      "destination": "/index.html"
     }
   ]
 }
