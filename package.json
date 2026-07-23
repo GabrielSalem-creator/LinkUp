@@ -2,8 +2,9 @@
   "name": "linkup",
   "private": true,
   "scripts": {
-    "build": "npm --prefix ./mobile run build",
-    "vercel-build": "npm --prefix ./mobile run build"
+    "build": "echo serving www",
+    "vercel-build": "echo serving www",
+    "export:web": "npm --prefix ./mobile run build && node scripts/sync-www.mjs"
   },
   "engines": {
     "node": ">=20"

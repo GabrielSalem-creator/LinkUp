@@ -1,6 +1,10 @@
 # dependencies
 node_modules/
 **/node_modules/
+!www/assets/node_modules/
+!www/assets/node_modules/**
+!mobile/dist/assets/node_modules/
+!mobile/dist/assets/node_modules/**
 
 # env / secrets — never commit API keys
 .env
@@ -10,12 +14,17 @@ node_modules/
 **/.env.*
 !**/.env.example
 
-# builds
-dist/
+# local expo / native builds
 web-build/
 .expo/
-**/dist/
+**/web-build/
 **/.expo/
+**/ios/
+**/android/
+*.jks
+*.p8
+*.p12
+*.mobileprovision
 
 # logs / OS
 *.log
@@ -26,10 +35,4 @@ Thumbs.db
 *.tsbuildinfo
 expo-env.d.ts
 
-# native
-**/ios/
-**/android/
-*.jks
-*.p8
-*.p12
-*.mobileprovision
+# NOTE: www/ and mobile/dist/ are committed so Vercel can host without Expo build

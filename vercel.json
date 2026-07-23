@@ -1,9 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "npm --prefix ./mobile install",
-  "buildCommand": "npm --prefix ./mobile run build",
-  "outputDirectory": "mobile/dist",
   "framework": null,
+  "buildCommand": "echo \"serving www\"",
+  "outputDirectory": "www",
+  "installCommand": "echo \"skip\"",
   "cleanUrls": true,
   "rewrites": [
     {
