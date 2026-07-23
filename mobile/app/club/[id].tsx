@@ -33,27 +33,38 @@ export default function ClubDetailScreen() {
   const [merch, setMerch] = useState<MerchItem[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [joined, setJoined] = useState(false);
+  const [joinedEventIds, setJoinedEventIds] = useState<Set<string>>(new Set());
+  const [joiningEventId, setJoiningEventId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('events');
 
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
-    const [c, ev, m, acts] = await Promise.all([
-      api.clubs.get(id),
-      api.events.forClub(id),
-      api.merch.forClub(id),
-      api.activities.list(),
-    ]);
-    setClub(c);
-    setEvents(ev);
-    setMerch(m);
-    setActivities(acts.filter((a) => a.club_id === id));
-    if (user?.email) {
-      const memberships = await api.memberships.mine(user.email);
-      setJoined(memberships.some((x) => x.club_id === id));
+    try {
+      const [c, ev, m, acts] = await Promise.all([
+        api.clubs.get(id),
+        api.events.forClub(id),
+        api.merch.forClub(id),
+        api.activities.list(),
+      ]);
+      setClub(c);
+      setEvents(ev);
+      setMerch(m);
+      setActivities(acts.filter((a) => a.club_id === id));
+      if (user?.email) {
+        const [memberships, mine] = await Promise.all([
+          api.memberships.mine(user.email),
+          api.eventParticipants.mine(user.email),
+        ]);
+        setJoined(memberships.some((x) => x.club_id === id));
+        setJoinedEventIds(new Set(mine.map((x) => x.event_id)));
+      }
+    } catch (e) {
+      Alert.alert('Load failed', e instanceof Error ? e.message : 'Try again');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [id, user?.email]);
 
   useEffect(() => {
@@ -70,13 +81,35 @@ export default function ClubDetailScreen() {
 
   const toggleJoin = async () => {
     if (!user || !club) return;
-    if (joined) {
-      await api.memberships.leave(club.id, user.email);
-      setJoined(false);
-    } else {
-      await api.memberships.join(club.id, user.email);
-      setJoined(true);
-      Alert.alert('Joined!', `You're now a member of ${club.name}`);
+    try {
+      if (joined) {
+        await api.memberships.leave(club.id, user.email);
+        setJoined(false);
+      } else {
+        await api.memberships.join(club.id, user.email);
+        setJoined(true);
+        Alert.alert('Joined!', `You're now a member of ${club.name}`);
+      }
+    } catch (e) {
+      Alert.alert('Could not update membership', e instanceof Error ? e.message : 'Try again');
+    }
+  };
+
+  const joinEvent = async (ev: ClubEvent) => {
+    if (!user?.email) {
+      Alert.alert('Sign in required', 'Log in to join events.');
+      return;
+    }
+    if (joinedEventIds.has(ev.id)) return;
+    setJoiningEventId(ev.id);
+    try {
+      await api.eventParticipants.join(ev, user.email);
+      setJoinedEventIds((prev) => new Set([...prev, ev.id]));
+      Alert.alert('Joined', `You're in for ${ev.title}`);
+    } catch (e) {
+      Alert.alert('Could not join', e instanceof Error ? e.message : 'Try again');
+    } finally {
+      setJoiningEventId(null);
     }
   };
 
@@ -169,7 +202,16 @@ export default function ClubDetailScreen() {
 
           <View style={{ marginTop: 16 }}>
             {tab === 'events'
-              ? events.map((ev) => <EventCard key={ev.id} event={ev} club={club} />)
+              ? events.map((ev) => (
+                  <EventCard
+                    key={ev.id}
+                    event={ev}
+                    club={club}
+                    joined={joinedEventIds.has(ev.id)}
+                    joining={joiningEventId === ev.id}
+                    onJoin={() => joinEvent(ev)}
+                  />
+                ))
               : tab === 'leaderboard'
                 ? leaderboard.map((row, i) => (
                     <View

@@ -2,27 +2,33 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import SportBadge from '@/components/ui/SportBadge';
 import { fonts } from '@/constants/theme';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Club, ClubEvent } from '@/types';
 
-type Props = { event: ClubEvent; club?: Club | null };
+type Props = {
+  event: ClubEvent;
+  club?: Club | null;
+  joined?: boolean;
+  joining?: boolean;
+  onJoin?: () => void;
+};
 
-export default function EventCard({ event, club }: Props) {
+export default function EventCard({ event, club, joined, joining, onJoin }: Props) {
   const { colors } = useTheme();
   const router = useRouter();
   const image = event.cover_url || club?.cover_url || club?.logo_url;
 
   return (
+    <View
+      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+    >
       <Pressable
         onPress={() => router.push(`/club/${event.club_id}`)}
-        style={({ pressed }) => [
-          styles.card,
-          { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.92 : 1 },
-        ]}
+        style={({ pressed }) => [{ opacity: pressed ? 0.92 : 1 }]}
       >
         {image ? (
           <View style={styles.imageWrap}>
@@ -82,6 +88,31 @@ export default function EventCard({ event, club }: Props) {
           </View>
         </View>
       </Pressable>
+
+      {onJoin ? (
+        <View style={styles.joinWrap}>
+          <Pressable
+            onPress={onJoin}
+            disabled={joined || joining}
+            style={[
+              styles.joinBtn,
+              {
+                backgroundColor: joined ? colors.secondary : colors.primary,
+                opacity: joining ? 0.7 : 1,
+              },
+            ]}
+          >
+            {joining ? (
+              <ActivityIndicator color={joined ? colors.foreground : '#fff'} />
+            ) : (
+              <Text style={{ color: joined ? colors.foreground : '#fff', fontFamily: fonts.bodySemi, fontSize: 13 }}>
+                {joined ? 'Joined' : 'Join event'}
+              </Text>
+            )}
+          </Pressable>
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -104,11 +135,18 @@ const styles = StyleSheet.create({
   },
   logo: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: 'rgba(255,255,255,0.35)' },
   brandName: { color: '#fff', fontFamily: fonts.bodySemi, fontSize: 12 },
-  body: { padding: 14 },
+  body: { padding: 14, paddingBottom: 8 },
   titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 8 },
   clubTiny: { fontFamily: fonts.bodyMed, fontSize: 10, marginBottom: 2 },
   title: { fontFamily: fonts.headingSemi, fontSize: 15, lineHeight: 20 },
   meta: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4, maxWidth: 160 },
   metaText: { fontFamily: fonts.body, fontSize: 12 },
+  joinWrap: { paddingHorizontal: 14, paddingBottom: 14 },
+  joinBtn: {
+    height: 40,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

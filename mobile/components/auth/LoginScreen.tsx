@@ -74,7 +74,7 @@ export default function LoginScreen() {
           Backend: {isAppwrite ? 'Appwrite (FRA) live' : 'Local mock'}
         </Text>
         <Text style={[styles.badge, { color: colors.mutedForeground, marginBottom: 16 }]}>
-          Demo: demo@linkup.app / LinkUpDemo123!
+          Create an account, or try demo@linkup.app / LinkUpDemo123!
         </Text>
 
         {mode === 'register' ? (

@@ -34,8 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let alive = true;
     (async () => {
       try {
-        let me = await api.auth.me();
-        if (!me) me = await api.auth.loginDemo();
+        const me = await api.auth.me();
         if (!alive) return;
         setUser(me);
         setUsingFallback(false);
@@ -45,17 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn(msg, e);
         if (!alive) return;
         setConnectionError(msg);
-        // Last-resort local user so UI still opens; data screens fetch Appwrite publicly
-        setUser({
-          id: 'local-guest',
-          email: 'guest@local',
-          full_name: 'Guest',
-          city: 'Beirut',
-          total_distance_km: 0,
-          total_activities: 0,
-          current_streak: 0,
-          longest_streak: 0,
-        });
+        setUser(null);
         setUsingFallback(true);
       } finally {
         if (alive) setIsLoading(false);
@@ -93,18 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* ignore */
     }
-    setIsLoading(true);
-    try {
-      const me = await api.auth.loginDemo();
-      setUser(me);
-      setUsingFallback(false);
-      setConnectionError(null);
-    } catch (e) {
-      setConnectionError(e instanceof Error ? e.message : 'Reconnect failed');
-      setUsingFallback(true);
-    } finally {
-      setIsLoading(false);
-    }
+    setUser(null);
+    setUsingFallback(false);
+    setConnectionError(null);
   }, []);
 
   const updateProfile = useCallback(async (patch: Partial<User>) => {

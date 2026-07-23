@@ -34,12 +34,13 @@ import type {
 
 const delay = (ms = 250) => new Promise((r) => setTimeout(r, ms));
 
-let sessionUser: User | null = { ...CURRENT_USER };
+let sessionUser: User | null = null;
 let memberships = [...MEMBERSHIPS];
 let friendships = [...FRIENDSHIPS];
 let eventParticipants = [...EVENT_PARTICIPANTS];
 let leagueParticipants = [...LEAGUE_PARTICIPANTS];
 let leagues = [...LEAGUES];
+let events = [...EVENTS];
 
 export const mockApi = {
   auth: {
@@ -86,11 +87,17 @@ export const mockApi = {
   events: {
     async list(): Promise<ClubEvent[]> {
       await delay();
-      return [...EVENTS].sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''));
+      return [...events].sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''));
     },
     async forClub(clubId: string): Promise<ClubEvent[]> {
       await delay();
-      return EVENTS.filter((e) => e.club_id === clubId).sort((a, b) => a.date.localeCompare(b.date));
+      return events.filter((e) => e.club_id === clubId).sort((a, b) => a.date.localeCompare(b.date));
+    },
+    async create(input: Omit<ClubEvent, 'id'>): Promise<ClubEvent> {
+      await delay(200);
+      const created: ClubEvent = { ...input, id: `ev-${Date.now()}` };
+      events = [created, ...events];
+      return { ...created };
     },
   },
 
@@ -212,11 +219,39 @@ export const mockApi = {
       await delay();
       return friendships.filter((f) => f.addressee_email === email && f.status === 'pending');
     },
+    async outgoingPendingFor(email: string): Promise<Friendship[]> {
+      await delay();
+      return friendships.filter((f) => f.requester_email === email && f.status === 'pending');
+    },
     async acceptedFor(email: string): Promise<Friendship[]> {
       await delay();
       return friendships.filter(
         (f) => f.status === 'accepted' && (f.addressee_email === email || f.requester_email === email)
       );
+    },
+    async request(requester: User, addressee: User): Promise<Friendship> {
+      await delay(200);
+      if (requester.email === addressee.email) throw new Error('Cannot follow yourself');
+      const existing = friendships.find(
+        (f) => f.requester_email === requester.email && f.addressee_email === addressee.email
+      );
+      if (existing) return { ...existing };
+      const reverse = friendships.find(
+        (f) => f.requester_email === addressee.email && f.addressee_email === requester.email
+      );
+      if (reverse) {
+        if (reverse.status === 'pending') reverse.status = 'accepted';
+        return { ...reverse };
+      }
+      const created: Friendship = {
+        id: `f-${Date.now()}`,
+        requester_email: requester.email,
+        addressee_email: addressee.email,
+        status: 'pending',
+        requester_name: requester.full_name,
+      };
+      friendships.push(created);
+      return { ...created };
     },
     async accept(id: string): Promise<void> {
       await delay(200);

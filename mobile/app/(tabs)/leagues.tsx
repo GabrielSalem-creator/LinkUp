@@ -117,20 +117,25 @@ export default function LeaguesScreen() {
   const handleCreate = async () => {
     if (!user || !newName.trim()) return;
     const code = newName.replace(/\s+/g, '').slice(0, 6).toUpperCase() + Math.floor(Math.random() * 90 + 10);
-    await api.leagues.create({
-      name: newName.trim(),
-      sport: newSport as League['sport'],
-      description: '',
-      created_by: user.email,
-      creator_name: user.full_name,
-      invite_code: code,
-      start_date: format(new Date(), 'yyyy-MM-dd'),
-      end_date: format(new Date(Date.now() + 30 * 86400000), 'yyyy-MM-dd'),
-      max_members: 50,
-    });
-    setShowCreate(false);
-    setNewName('');
-    await load();
+    try {
+      await api.leagues.create({
+        name: newName.trim(),
+        sport: newSport as League['sport'],
+        description: '',
+        created_by: user.email,
+        creator_name: user.full_name,
+        invite_code: code,
+        start_date: format(new Date(), 'yyyy-MM-dd'),
+        end_date: format(new Date(Date.now() + 30 * 86400000), 'yyyy-MM-dd'),
+        max_members: 50,
+      });
+      setShowCreate(false);
+      setNewName('');
+      await load();
+      Alert.alert('League created', `Invite code: ${code}`);
+    } catch (e) {
+      Alert.alert('Could not create league', e instanceof Error ? e.message : 'Try again');
+    }
   };
 
   if (selected) {

@@ -43,22 +43,18 @@ async function postSession(path: string, body?: Record<string, string>) {
 }
 
 export async function createEmailSessionRest(email: string, password: string) {
-  return postSession('/account/sessions/email', { email, password });
+  // Prefer official SDK — stores cookieFallback in localStorage on web
+  try {
+    await clearPersistedSession();
+    await account.createEmailPasswordSession({ email, password });
+    return { userId: 'sdk' };
+  } catch {
+    return postSession('/account/sessions/email', { email, password });
+  }
 }
 
 export async function createDemoSessionRest() {
-  // Prefer official SDK on web — it auto-saves cookieFallback from response headers
-  try {
-    await clearPersistedSession();
-    await account.createEmailPasswordSession({
-      email: DEMO_EMAIL,
-      password: DEMO_PASSWORD,
-    });
-    return { userId: 'demoathlete001' };
-  } catch {
-    // REST + manual fallback cookie (works everywhere fetch can read the header)
-    return createEmailSessionRest(DEMO_EMAIL, DEMO_PASSWORD);
-  }
+  return createEmailSessionRest(DEMO_EMAIL, DEMO_PASSWORD);
 }
 
 export async function createAnonymousSessionRest() {

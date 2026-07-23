@@ -83,7 +83,7 @@ function RootLayoutNav() {
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
         <ActivityIndicator color={colors.primary} size="large" />
         <Text style={{ marginTop: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
-          Connecting to Appwrite…
+          Checking your session…
         </Text>
       </View>
     );

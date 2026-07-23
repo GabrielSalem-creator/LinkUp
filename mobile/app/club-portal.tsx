@@ -51,20 +51,22 @@ export default function ClubPortalScreen() {
       Alert.alert('Missing fields', 'Title and date (YYYY-MM-DD) are required');
       return;
     }
-    // Mock-only: show success and append locally for demo UX
-    const created: ClubEvent = {
-      id: `ev-local-${Date.now()}`,
-      club_id: selectedClub.id,
-      club_name: selectedClub.name,
-      title: title.trim(),
-      sport: selectedClub.sport,
-      date: date.trim(),
-      time,
-      meeting_point: 'TBD',
-    };
-    setEvents((prev) => [created, ...prev]);
-    setTitle('');
-    Alert.alert('Event created (demo)', 'In production this writes to your backend.');
+    try {
+      const created = await api.events.create({
+        club_id: selectedClub.id,
+        club_name: selectedClub.name,
+        title: title.trim(),
+        sport: selectedClub.sport,
+        date: date.trim(),
+        time,
+        meeting_point: 'TBD',
+      });
+      setEvents((prev) => [created, ...prev]);
+      setTitle('');
+      Alert.alert('Event published', `${created.title} is now live on LinkUp.`);
+    } catch (e) {
+      Alert.alert('Could not create event', e instanceof Error ? e.message : 'Try again');
+    }
   };
 
   if (!unlocked) {

@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -38,6 +39,8 @@ export default function EventsScreen() {
   const router = useRouter();
   const [events, setEvents] = useState<ClubEvent[]>([]);
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const [joiningId, setJoiningId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pending, setPending] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
@@ -51,8 +54,12 @@ export default function EventsScreen() {
       setEvents(ev);
       setClubs(cl);
       if (user?.email) {
-        const p = await api.friendships.pendingFor(user.email).catch(() => []);
+        const [p, mine] = await Promise.all([
+          api.friendships.pendingFor(user.email).catch(() => []),
+          api.eventParticipants.mine(user.email).catch(() => []),
+        ]);
         setPending(p.length);
+        setJoinedIds(new Set(mine.map((x) => x.event_id)));
       }
     } catch (e) {
       console.warn('Events load failed, using offline data', e);
@@ -64,6 +71,24 @@ export default function EventsScreen() {
       setLoading(false);
     }
   }, [user?.email, usingFallback]);
+
+  const joinEvent = async (ev: ClubEvent) => {
+    if (!user?.email) {
+      Alert.alert('Sign in required', 'Log in to join events.');
+      return;
+    }
+    if (joinedIds.has(ev.id)) return;
+    setJoiningId(ev.id);
+    try {
+      await api.eventParticipants.join(ev, user.email);
+      setJoinedIds((prev) => new Set([...prev, ev.id]));
+      Alert.alert('Joined', `You're in for ${ev.title}`);
+    } catch (e) {
+      Alert.alert('Could not join', e instanceof Error ? e.message : 'Try again');
+    } finally {
+      setJoiningId(null);
+    }
+  };
 
   useEffect(() => {
     load();
@@ -153,7 +178,14 @@ export default function EventsScreen() {
             <View key={date} style={styles.dayBlock}>
               <Text style={[styles.dayLabel, { color: colors.foreground }]}>{dayLabel(date)}</Text>
               {byDay[date].map((ev) => (
-                <EventCard key={ev.id} event={ev} club={clubMap[ev.club_id]} />
+                <EventCard
+                  key={ev.id}
+                  event={ev}
+                  club={clubMap[ev.club_id]}
+                  joined={joinedIds.has(ev.id)}
+                  joining={joiningId === ev.id}
+                  onJoin={() => joinEvent(ev)}
+                />
               ))}
             </View>
           ))}

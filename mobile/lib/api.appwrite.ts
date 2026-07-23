@@ -117,20 +117,32 @@ export const appwriteApi = {
     async loginDemo(): Promise<User> {
       try {
         const existing = await getAccountSafe();
-        if (existing.email === 'demo@linkup.app' || existing.email) {
+        if (existing.email === 'demo@linkup.app') {
           return ensureProfile({ ...existing, name: existing.name || 'Demo Athlete' });
+        }
+        // Different account signed in — clear before demo login
+        await clearPersistedSession();
+        try {
+          await account.deleteSession({ sessionId: 'current' });
+        } catch {
+          /* ignore */
         }
       } catch {
         /* need new session */
       }
 
-      // Use stable demo account (not anonymous) so web/Vercel always get a session secret
       await createDemoSessionRest();
       const authUser = await getAccountSafe();
       return ensureProfile({ ...authUser, name: authUser.name || 'Demo Athlete' });
     },
 
     async register(email: string, password: string, name: string): Promise<User> {
+      await clearPersistedSession();
+      try {
+        await account.deleteSession({ sessionId: 'current' });
+      } catch {
+        /* ignore */
+      }
       await account.create({
         userId: ID.unique(),
         email,
@@ -220,6 +232,30 @@ export const appwriteApi = {
         Query.orderAsc('date'),
       ]);
       return docs.map((d) => mapEvent(d as never));
+    },
+    async create(input: Omit<ClubEvent, 'id'>): Promise<ClubEvent> {
+      const data: Record<string, unknown> = {
+        club_id: input.club_id,
+        title: input.title,
+        date: input.date,
+      };
+      if (input.club_name) data.club_name = input.club_name;
+      if (input.description) data.description = input.description;
+      if (input.sport) data.sport = input.sport;
+      if (input.time) data.time = input.time;
+      if (input.meeting_point) data.meeting_point = input.meeting_point;
+      if (input.distance_km != null) data.distance_km = input.distance_km;
+      if (input.cover_url) data.cover_url = input.cover_url;
+      if (input.attendance_password) data.attendance_password = input.attendance_password;
+      if (input.max_participants != null) data.max_participants = input.max_participants;
+
+      const created = await databases.createDocument({
+        databaseId: dbId,
+        collectionId: COLLECTION.club_events,
+        documentId: ID.unique(),
+        data,
+      });
+      return mapEvent(created as never);
     },
   },
 
@@ -419,6 +455,13 @@ export const appwriteApi = {
       ]);
       return docs.map((d) => mapFriendship(d as never));
     },
+    async outgoingPendingFor(email: string): Promise<Friendship[]> {
+      const docs = await listAll(COLLECTION.friendships, [
+        Query.equal('requester_email', email),
+        Query.equal('status', 'pending'),
+      ]);
+      return docs.map((d) => mapFriendship(d as never));
+    },
     async acceptedFor(email: string): Promise<Friendship[]> {
       const asAddressee = await listAll(COLLECTION.friendships, [
         Query.equal('addressee_email', email),
@@ -434,6 +477,48 @@ export const appwriteApi = {
         map.set(f.id, f);
       });
       return [...map.values()];
+    },
+    async request(requester: User, addressee: User): Promise<Friendship> {
+      if (requester.email === addressee.email) {
+        throw new Error('Cannot follow yourself');
+      }
+      const existing = await listAll(COLLECTION.friendships, [
+        Query.equal('requester_email', requester.email),
+        Query.equal('addressee_email', addressee.email),
+        Query.limit(1),
+      ]);
+      if (existing[0]) return mapFriendship(existing[0] as never);
+
+      const reverse = await listAll(COLLECTION.friendships, [
+        Query.equal('requester_email', addressee.email),
+        Query.equal('addressee_email', requester.email),
+        Query.limit(1),
+      ]);
+      if (reverse[0]) {
+        if (String(reverse[0].status) === 'pending') {
+          const updated = await databases.updateDocument({
+            databaseId: dbId,
+            collectionId: COLLECTION.friendships,
+            documentId: reverse[0].$id,
+            data: { status: 'accepted' },
+          });
+          return mapFriendship(updated as never);
+        }
+        return mapFriendship(reverse[0] as never);
+      }
+
+      const created = await databases.createDocument({
+        databaseId: dbId,
+        collectionId: COLLECTION.friendships,
+        documentId: ID.unique(),
+        data: {
+          requester_email: requester.email,
+          addressee_email: addressee.email,
+          status: 'pending',
+          requester_name: requester.full_name,
+        },
+      });
+      return mapFriendship(created as never);
     },
     async accept(id: string): Promise<void> {
       await databases.updateDocument({
