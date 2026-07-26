@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { type ColorValue, Platform, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fonts, radius } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
@@ -37,7 +38,10 @@ function TabIcon({
 export default function TabLayout() {
   const { colors } = useTheme();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [pending, setPending] = useState(0);
+  const bottomPad = Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6);
+  const tabHeight = 56 + bottomPad;
 
   useEffect(() => {
     if (!user?.email) return;
@@ -50,20 +54,24 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
           borderTopWidth: StyleSheet.hairlineWidth,
-          height: Platform.OS === 'web' ? 68 : 72,
-          paddingBottom: Platform.OS === 'web' ? 10 : 12,
-          paddingTop: 8,
+          height: tabHeight,
+          paddingBottom: bottomPad,
+          paddingTop: 6,
           elevation: 0,
           shadowOpacity: 0,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 2,
         },
         tabBarLabelStyle: {
           fontFamily: fonts.bodySemi,
           fontSize: 11,
-          marginTop: 2,
+          marginTop: 1,
         },
       }}
     >
@@ -115,7 +123,7 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   iconWrap: {
-    width: 44,
+    width: 48,
     height: 32,
     borderRadius: radius.md,
     alignItems: 'center',
@@ -124,7 +132,7 @@ const styles = StyleSheet.create({
   badge: {
     position: 'absolute',
     top: -2,
-    right: 2,
+    right: 4,
     minWidth: 16,
     height: 16,
     borderRadius: 8,

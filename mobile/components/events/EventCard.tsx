@@ -187,7 +187,8 @@ const styles = StyleSheet.create({
   metaText: { fontFamily: fonts.bodyMed, fontSize: 12 },
   joinWrap: { paddingHorizontal: 14, paddingBottom: 14 },
   joinBtn: {
-    height: 44,
+    height: 48,
+    minHeight: 48,
     borderRadius: radius.full,
     alignItems: 'center',
     justifyContent: 'center',
