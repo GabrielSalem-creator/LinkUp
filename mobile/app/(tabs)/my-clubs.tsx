@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { format } from 'date-fns';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -75,13 +75,22 @@ export default function MyClubsScreen() {
         title="My Clubs"
         subtitle="Teams you train with"
         right={
-          <Pressable
-            style={[styles.exploreBtn, { backgroundColor: colors.primarySoft }]}
-            onPress={() => router.push('/clubs')}
-          >
-            <Ionicons name="compass-outline" size={16} color={colors.primary} />
-            <Text style={[styles.exploreText, { color: colors.primary }]}>Explore</Text>
-          </Pressable>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Pressable
+              style={[styles.exploreBtn, { backgroundColor: colors.primarySoft }]}
+              onPress={() => router.push('/create-club' as Href)}
+            >
+              <Ionicons name="add" size={16} color={colors.primary} />
+              <Text style={[styles.exploreText, { color: colors.primary }]}>Register</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.exploreBtn, { backgroundColor: colors.accent }]}
+              onPress={() => router.push('/clubs')}
+            >
+              <Ionicons name="compass-outline" size={16} color="#fff" />
+              <Text style={[styles.exploreText, { color: '#fff' }]}>Explore</Text>
+            </Pressable>
+          </View>
         }
       />
 
@@ -95,9 +104,14 @@ export default function MyClubsScreen() {
           title="No clubs yet"
           description="Join clubs to see them here and stay updated with their events."
           action={
-            <Pressable style={[styles.cta, { backgroundColor: colors.primary }]} onPress={() => router.push('/clubs')}>
-              <Text style={[styles.ctaText, { color: colors.primaryForeground }]}>Explore Clubs</Text>
-            </Pressable>
+            <View style={{ gap: 10, alignItems: 'center' }}>
+              <Pressable style={[styles.cta, { backgroundColor: colors.accent }]} onPress={() => router.push('/clubs')}>
+                <Text style={[styles.ctaText, { color: '#fff' }]}>Explore Clubs</Text>
+              </Pressable>
+              <Pressable onPress={() => router.push('/create-club' as Href)}>
+                <Text style={{ color: colors.primary, fontFamily: fonts.bodySemi }}>Register a club</Text>
+              </Pressable>
+            </View>
           }
         />
       ) : (
@@ -185,11 +199,11 @@ const styles = StyleSheet.create({
   count: { fontFamily: fonts.bodySemi, fontSize: 11, textTransform: 'uppercase' },
   card: { borderWidth: 1, borderRadius: radius.lg, padding: 14, marginBottom: 10 },
   cardTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logo: { width: 52, height: 52, borderRadius: radius.md },
+  logo: { width: 52, height: 52, borderRadius: 26 },
   logoFallback: {
     width: 52,
     height: 52,
-    borderRadius: radius.md,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
   },

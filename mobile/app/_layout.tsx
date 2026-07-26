@@ -58,9 +58,9 @@ export default function RootLayout() {
   // Never stay on a blank screen waiting for fonts
   if (!fontsLoaded && !fontError && !fontTimeout) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F7F7F8' }}>
-        <ActivityIndicator color="#129B7A" size="large" />
-        <Text style={{ marginTop: 12, color: '#6B7280', fontFamily: 'System' }}>Loading LinkUp…</Text>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF2E2' }}>
+        <ActivityIndicator color="#FF5E4A" size="large" />
+        <Text style={{ marginTop: 12, color: '#6B6560', fontFamily: 'System' }}>Loading LinkUp…</Text>
       </View>
     );
   }
@@ -123,6 +123,10 @@ function RootLayoutNav() {
         <Stack.Screen name="club/[id]" options={{ title: 'Club' }} />
         <Stack.Screen name="people" options={{ title: 'People' }} />
         <Stack.Screen name="club-portal" options={{ title: 'Club Portal' }} />
+        <Stack.Screen name="create-club" options={{ title: 'Register a Club' }} />
+        <Stack.Screen name="club-request-pending" options={{ title: 'Request Received', headerBackVisible: false }} />
+        <Stack.Screen name="join-league" options={{ title: 'Join League' }} />
+        <Stack.Screen name="connections" options={{ title: 'Connections' }} />
       </Stack>
     </>
   );

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { type ColorValue, Platform, StyleSheet, Text, View } from 'react-native';
 
 import { fonts, radius } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
@@ -16,17 +16,17 @@ function TabIcon({
   badge,
 }: {
   focused: boolean;
-  color: string;
+  color: ColorValue;
   name: keyof typeof Ionicons.glyphMap;
   nameOutline: keyof typeof Ionicons.glyphMap;
   badge?: number;
 }) {
   const { colors } = useTheme();
   return (
-    <View style={[styles.iconWrap, focused && { backgroundColor: colors.primarySoft }]}>
+    <View style={[styles.iconWrap, focused && { backgroundColor: `${colors.accent}22` }]}>
       <Ionicons name={focused ? name : nameOutline} size={22} color={color} />
       {badge && badge > 0 ? (
-        <View style={[styles.badge, { backgroundColor: colors.destructive }]}>
+        <View style={[styles.badge, { backgroundColor: colors.accent }]}>
           <Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
         </View>
       ) : null}
@@ -48,7 +48,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.mutedForeground,
         tabBarStyle: {
           backgroundColor: colors.card,

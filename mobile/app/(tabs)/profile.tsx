@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -15,10 +16,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
 import SportBadge from '@/components/ui/SportBadge';
-import { fonts } from '@/constants/theme';
+import { fonts, radius } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
 import { api } from '@/lib/api';
+import { formatScore, metricForSport } from '@/lib/scoring';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Activity, EventParticipant, Memory } from '@/types';
 
@@ -32,12 +36,22 @@ export default function ProfileScreen() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [upcoming, setUpcoming] = useState<EventParticipant[]>([]);
   const [memories, setMemories] = useState<Memory[]>([]);
-  const [friends, setFriends] = useState(0);
+  const [followers, setFollowers] = useState(0);
+  const [following, setFollowing] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
   const [editName, setEditName] = useState('');
   const [editBio, setEditBio] = useState('');
   const [editCity, setEditCity] = useState('');
+
+  const [completeEp, setCompleteEp] = useState<EventParticipant | null>(null);
+  const [eventCode, setEventCode] = useState('');
+  const [completing, setCompleting] = useState(false);
+
+  const [memoryAct, setMemoryAct] = useState<Activity | null>(null);
+  const [memTitle, setMemTitle] = useState('');
+  const [memPhoto, setMemPhoto] = useState('');
+  const [savingMem, setSavingMem] = useState(false);
 
   const load = useCallback(async () => {
     if (!user?.email) return;
@@ -49,9 +63,10 @@ export default function ProfileScreen() {
       api.friendships.acceptedFor(user.email),
     ]);
     setActivities(acts);
-    setUpcoming(eps);
+    setUpcoming(eps.filter((e) => !e.confirmed));
     setMemories(mems);
-    setFriends(accepted.length);
+    setFollowers(accepted.filter((f) => f.addressee_email === user.email).length);
+    setFollowing(accepted.filter((f) => f.requester_email === user.email).length);
     setLoading(false);
   }, [user?.email]);
 
@@ -59,19 +74,60 @@ export default function ProfileScreen() {
     load();
   }, [load]);
 
-  const historyBySport = useMemo(() => {
-    const map: Record<string, Activity[]> = {};
-    activities.forEach((a) => {
-      if (!map[a.sport]) map[a.sport] = [];
-      map[a.sport].push(a);
-    });
-    return Object.entries(map);
-  }, [activities]);
+  const historyFlat = useMemo(
+    () => [...activities].sort((a, b) => b.date.localeCompare(a.date)),
+    [activities],
+  );
+
+  const submitComplete = async () => {
+    if (!user || !completeEp) return;
+    setCompleting(true);
+    try {
+      await api.eventParticipants.complete(completeEp, eventCode, user);
+      setCompleteEp(null);
+      setEventCode('');
+      setTab('history');
+      await load();
+      Alert.alert('Completed', 'Event moved to your history.');
+    } catch (e) {
+      Alert.alert('Could not complete', e instanceof Error ? e.message : 'Check the code');
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  const submitMemory = async () => {
+    if (!user || !memoryAct || !memPhoto.trim()) {
+      Alert.alert('Photo required', 'Paste an image URL for now (upload wiring later).');
+      return;
+    }
+    setSavingMem(true);
+    try {
+      await api.memories.create({
+        user_email: user.email,
+        title: memTitle.trim() || memoryAct.notes?.replace('Attended event: ', '') || 'Memory',
+        photo_url: memPhoto.trim(),
+        date: memoryAct.date,
+        location: memoryAct.club_name,
+        event_title: memoryAct.notes?.replace('Attended event: ', ''),
+        club_name: memoryAct.club_name,
+      });
+      setMemoryAct(null);
+      setMemTitle('');
+      setMemPhoto('');
+      setTab('memories');
+      await load();
+    } catch (e) {
+      Alert.alert('Could not save', e instanceof Error ? e.message : 'Try again');
+    } finally {
+      setSavingMem(false);
+    }
+  };
 
   if (!user) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={colors.accent} />
       </View>
     );
   }
@@ -80,7 +136,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <LinearGradient
-          colors={isDark ? ['#16352C', '#0A100E'] : ['#C8EDE0', '#F2F5F4']}
+          colors={isDark ? ['#133440', '#0C1A20'] : ['#5ABDB7', '#FFF2E2']}
           style={styles.banner}
         />
         <View style={styles.profileBlock}>
@@ -102,16 +158,15 @@ export default function ProfileScreen() {
             <Text style={[styles.bio, { color: colors.mutedForeground }]}>{user.bio}</Text>
           ) : null}
 
-          <View style={styles.statsRow}>
-            <Stat label="km" value={user.total_distance_km.toFixed(0)} colors={colors} />
-            <Stat label="activities" value={String(user.total_activities)} colors={colors} />
-            <Stat label="streak" value={String(user.current_streak)} colors={colors} />
-            <Stat label="friends" value={String(friends)} colors={colors} />
+          <View style={[styles.statsBand, { backgroundColor: colors.primary }]}>
+            <Stat label="Followers" value={String(followers)} light />
+            <View style={styles.statDivider} />
+            <Stat label="Following" value={String(following)} light />
           </View>
 
           <View style={styles.actions}>
             <Pressable
-              style={[styles.actionBtn, { backgroundColor: colors.primarySoft, borderColor: colors.primarySoft }]}
+              style={[styles.actionBtn, { backgroundColor: colors.primarySoft }]}
               onPress={() => {
                 setEditName(user.full_name);
                 setEditBio(user.bio || '');
@@ -120,7 +175,13 @@ export default function ProfileScreen() {
               }}
             >
               <Ionicons name="create-outline" size={16} color={colors.primary} />
-              <Text style={[styles.actionText, { color: colors.primary }]}>Edit profile</Text>
+              <Text style={[styles.actionText, { color: colors.primary }]}>Edit</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.iconAction, { backgroundColor: colors.secondary, borderColor: colors.border }]}
+              onPress={() => router.push('/connections' as Href)}
+            >
+              <Ionicons name="link-outline" size={18} color={colors.foreground} />
             </Pressable>
             <Pressable
               style={[styles.iconAction, { backgroundColor: colors.secondary, borderColor: colors.border }]}
@@ -171,42 +232,86 @@ export default function ProfileScreen() {
 
         <View style={styles.tabBody}>
           {loading ? (
-            <ActivityIndicator color={colors.primary} style={{ marginTop: 24 }} />
+            <ActivityIndicator color={colors.accent} style={{ marginTop: 24 }} />
           ) : tab === 'events' ? (
             upcoming.length === 0 ? (
-              <Text style={[styles.empty, { color: colors.mutedForeground }]}>No upcoming events joined.</Text>
+              <EmptyState
+                icon="calendar-outline"
+                title="No upcoming events"
+                description="Join an event from Discover, then enter the code after you attend."
+              />
             ) : (
               upcoming.map((ep) => (
-                <View
+                <Pressable
                   key={ep.id}
+                  onPress={() => {
+                    setCompleteEp(ep);
+                    setEventCode('');
+                  }}
                   style={[styles.itemCard, { backgroundColor: colors.card, borderColor: colors.border }]}
                 >
                   <Text style={[styles.itemTitle, { color: colors.foreground }]}>{ep.event_title}</Text>
                   <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, fontSize: 12 }}>
                     {ep.club_name} · {ep.event_date}
                   </Text>
-                </View>
+                  <Text style={{ color: colors.accent, fontFamily: fonts.bodySemi, fontSize: 12, marginTop: 8 }}>
+                    Enter event code
+                  </Text>
+                </Pressable>
               ))
             )
           ) : tab === 'history' ? (
-            historyBySport.map(([sport, acts]) => {
-              const total = acts.reduce((s, a) => s + a.distance_km, 0);
-              return (
-                <View key={sport} style={[styles.itemCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <View style={styles.historyHead}>
-                    <SportBadge sport={sport} size="sm" />
-                    <Text style={{ color: colors.primary, fontFamily: fonts.headingSemi }}>{total.toFixed(1)} km</Text>
-                  </View>
-                  {acts.slice(0, 3).map((a) => (
-                    <Text key={a.id} style={{ color: colors.mutedForeground, fontFamily: fonts.body, fontSize: 12, marginTop: 6 }}>
-                      {a.date} · {a.distance_km} km {a.club_name ? `· ${a.club_name}` : ''}
+            historyFlat.length === 0 ? (
+              <EmptyState
+                icon="fitness-outline"
+                title="No completed events"
+                description="Complete an event with the creator’s code to build your history."
+              />
+            ) : (
+              historyFlat.map((a) => {
+                const metric = metricForSport(a.sport);
+                const value =
+                  metric === 'distance_km'
+                    ? a.distance_km
+                    : metric === 'duration_hours'
+                      ? (a.duration_minutes || 0) / 60
+                      : 1;
+                return (
+                  <Pressable
+                    key={a.id}
+                    onPress={() => {
+                      setMemoryAct(a);
+                      setMemTitle(a.notes?.replace('Attended event: ', '') || a.sport);
+                      setMemPhoto('');
+                    }}
+                    style={[styles.itemCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                  >
+                    <View style={styles.historyHead}>
+                      <SportBadge sport={a.sport} size="sm" />
+                      <Text style={{ color: colors.primary, fontFamily: fonts.headingSemi }}>
+                        {formatScore(value, metric)}
+                      </Text>
+                    </View>
+                    <Text style={[styles.itemTitle, { color: colors.foreground, marginTop: 8 }]}>
+                      {a.notes?.replace('Attended event: ', '') || a.sport}
                     </Text>
-                  ))}
-                </View>
-              );
-            })
+                    <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, fontSize: 12, marginTop: 4 }}>
+                      {a.date}
+                      {a.club_name ? ` · ${a.club_name}` : ''}
+                    </Text>
+                    <Text style={{ color: colors.accent, fontFamily: fonts.bodySemi, fontSize: 12, marginTop: 8 }}>
+                      Add memory photos
+                    </Text>
+                  </Pressable>
+                );
+              })
+            )
           ) : memories.length === 0 ? (
-            <Text style={[styles.empty, { color: colors.mutedForeground }]}>No memories yet.</Text>
+            <EmptyState
+              icon="images-outline"
+              title="No memories yet"
+              description="Open a completed event in History and add photos."
+            />
           ) : (
             <View style={styles.memoryGrid}>
               {memories.map((m) => (
@@ -216,7 +321,7 @@ export default function ProfileScreen() {
                     {m.title}
                   </Text>
                   <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, fontSize: 11 }}>
-                    {m.location}
+                    {m.location || m.club_name}
                   </Text>
                 </View>
               ))}
@@ -227,7 +332,7 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <Modal visible={showEdit} transparent animationType="slide" onRequestClose={() => setShowEdit(false)}>
-        <View style={styles.modalBackdrop}>
+        <View style={[styles.modalBackdrop, { backgroundColor: colors.overlay }]}>
           <View style={[styles.sheet, { backgroundColor: colors.card }]}>
             <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Edit profile</Text>
             <TextInput
@@ -257,18 +362,68 @@ export default function ProfileScreen() {
               ]}
             />
             <View style={styles.sheetActions}>
-              <Pressable onPress={() => setShowEdit(false)} style={[styles.btnGhost, { borderColor: colors.border }]}>
-                <Text style={{ color: colors.foreground, fontFamily: fonts.bodySemi }}>Cancel</Text>
-              </Pressable>
-              <Pressable
+              <Button label="Cancel" variant="ghost" onPress={() => setShowEdit(false)} style={{ flex: 1 }} />
+              <Button
+                label="Save"
                 onPress={async () => {
                   await updateProfile({ full_name: editName, bio: editBio, city: editCity });
                   setShowEdit(false);
                 }}
-                style={[styles.btnPrimary, { backgroundColor: colors.primary }]}
-              >
-                <Text style={{ color: '#fff', fontFamily: fonts.bodySemi }}>Save</Text>
-              </Pressable>
+                style={{ flex: 1 }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={!!completeEp} transparent animationType="slide" onRequestClose={() => setCompleteEp(null)}>
+        <View style={[styles.modalBackdrop, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.sheet, { backgroundColor: colors.card }]}>
+            <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Enter event code</Text>
+            <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, marginBottom: 12 }}>
+              Ask the event creator for the code they shared at the end of {completeEp?.event_title}.
+            </Text>
+            <TextInput
+              value={eventCode}
+              onChangeText={setEventCode}
+              autoCapitalize="characters"
+              placeholder="Event code"
+              placeholderTextColor={colors.mutedForeground}
+              style={[styles.input, { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.secondary }]}
+            />
+            <View style={styles.sheetActions}>
+              <Button label="Cancel" variant="ghost" onPress={() => setCompleteEp(null)} style={{ flex: 1 }} />
+              <Button label="Complete" onPress={submitComplete} loading={completing} style={{ flex: 1 }} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={!!memoryAct} transparent animationType="slide" onRequestClose={() => setMemoryAct(null)}>
+        <View style={[styles.modalBackdrop, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.sheet, { backgroundColor: colors.card }]}>
+            <Text style={[styles.sheetTitle, { color: colors.foreground }]}>Add event memory</Text>
+            <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, marginBottom: 12 }}>
+              Photos show up in your Memories tab.
+            </Text>
+            <TextInput
+              value={memTitle}
+              onChangeText={setMemTitle}
+              placeholder="Caption"
+              placeholderTextColor={colors.mutedForeground}
+              style={[styles.input, { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.secondary }]}
+            />
+            <TextInput
+              value={memPhoto}
+              onChangeText={setMemPhoto}
+              autoCapitalize="none"
+              placeholder="Photo URL"
+              placeholderTextColor={colors.mutedForeground}
+              style={[styles.input, { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.secondary }]}
+            />
+            <View style={styles.sheetActions}>
+              <Button label="Cancel" variant="ghost" onPress={() => setMemoryAct(null)} style={{ flex: 1 }} />
+              <Button label="Save memory" onPress={submitMemory} loading={savingMem} style={{ flex: 1 }} />
             </View>
           </View>
         </View>
@@ -277,19 +432,13 @@ export default function ProfileScreen() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  colors,
-}: {
-  label: string;
-  value: string;
-  colors: { foreground: string; mutedForeground: string };
-}) {
+function Stat({ label, value, light }: { label: string; value: string; light?: boolean }) {
   return (
     <View style={{ alignItems: 'center', flex: 1 }}>
-      <Text style={{ fontFamily: fonts.heading, fontSize: 18, color: colors.foreground }}>{value}</Text>
-      <Text style={{ fontFamily: fonts.body, fontSize: 11, color: colors.mutedForeground }}>{label}</Text>
+      <Text style={{ fontFamily: fonts.heading, fontSize: 22, color: light ? '#FFF2E2' : undefined }}>{value}</Text>
+      <Text style={{ fontFamily: fonts.bodyMed, fontSize: 12, color: light ? 'rgba(255,242,226,0.75)' : undefined }}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -297,29 +446,36 @@ function Stat({
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  banner: { height: 110 },
-  profileBlock: { paddingHorizontal: 20, marginTop: -40 },
+  banner: { height: 120 },
+  profileBlock: { paddingHorizontal: 20, marginTop: -44 },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 20,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
     borderWidth: 4,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    alignSelf: 'center',
   },
   avatarImg: { width: '100%', height: '100%' },
-  avatarLetter: { color: '#fff', fontFamily: fonts.heading, fontSize: 28 },
-  name: { fontFamily: fonts.heading, fontSize: 20, marginTop: 12 },
-  cityRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
-  bio: { fontFamily: fonts.body, fontSize: 13, marginTop: 10, lineHeight: 18 },
-  statsRow: { flexDirection: 'row', marginTop: 18 },
-  actions: { flexDirection: 'row', gap: 8, marginTop: 16 },
+  avatarLetter: { color: '#fff', fontFamily: fonts.heading, fontSize: 32 },
+  name: { fontFamily: fonts.heading, fontSize: 24, textAlign: 'center', marginTop: 12 },
+  cityRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4 },
+  bio: { fontFamily: fonts.body, fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 19 },
+  statsBand: {
+    marginTop: 18,
+    borderRadius: radius.lg,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statDivider: { width: 1, height: 36, backgroundColor: 'rgba(255,242,226,0.25)' },
+  actions: { flexDirection: 'row', gap: 8, marginTop: 16, alignItems: 'center' },
   actionBtn: {
     flex: 1,
     height: 42,
-    borderWidth: 1,
-    borderRadius: 999,
+    borderRadius: radius.full,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -335,30 +491,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabsWrap: { paddingHorizontal: 20, marginTop: 22 },
-  tabs: { flexDirection: 'row', borderRadius: 999, padding: 4 },
-  tab: { flex: 1, height: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  tabs: { flexDirection: 'row', borderRadius: radius.full, padding: 4 },
+  tab: { flex: 1, height: 36, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center' },
   tabBody: { paddingHorizontal: 20, marginTop: 16 },
-  empty: { fontFamily: fonts.body, textAlign: 'center', marginTop: 20 },
-  itemCard: { borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 10 },
-  itemTitle: { fontFamily: fonts.headingSemi, fontSize: 14 },
+  itemCard: { borderWidth: 1, borderRadius: radius.md, padding: 14, marginBottom: 10 },
+  itemTitle: { fontFamily: fonts.headingSemi, fontSize: 15 },
   historyHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   memoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   memoryCard: { width: '47%' },
-  memoryImg: { width: '100%', height: 160, borderRadius: 14 },
+  memoryImg: { width: '100%', height: 160, borderRadius: radius.md },
   memoryTitle: { fontFamily: fonts.bodySemi, fontSize: 12, marginTop: 6 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36 },
-  sheetTitle: { fontFamily: fonts.headingSemi, fontSize: 18, marginBottom: 12 },
+  modalBackdrop: { flex: 1, justifyContent: 'flex-end' },
+  sheet: { borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, padding: 20, paddingBottom: 36 },
+  sheetTitle: { fontFamily: fonts.headingSemi, fontSize: 18, marginBottom: 8 },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
-    height: 44,
+    borderRadius: radius.md,
+    height: 48,
     paddingHorizontal: 12,
     marginBottom: 10,
     fontFamily: fonts.body,
   },
   bioInput: { height: 88, paddingTop: 12, textAlignVertical: 'top' },
   sheetActions: { flexDirection: 'row', gap: 10, marginTop: 8 },
-  btnGhost: { flex: 1, height: 44, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  btnPrimary: { flex: 1, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
 });

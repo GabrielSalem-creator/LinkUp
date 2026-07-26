@@ -109,28 +109,28 @@ export default function EventCard({ event, club, joined, joining, onJoin }: Prop
             style={({ pressed }) => [
               styles.joinBtn,
               {
-                backgroundColor: joined ? colors.primarySoft : colors.primary,
+                backgroundColor: joined ? colors.primarySoft : colors.accent,
                 opacity: joining ? 0.7 : pressed ? 0.9 : 1,
               },
             ]}
           >
             {joining ? (
-              <ActivityIndicator color={joined ? colors.primary : colors.primaryForeground} />
+              <ActivityIndicator color={joined ? colors.primary : colors.accentForeground} />
             ) : (
               <>
                 <Ionicons
                   name={joined ? 'checkmark-circle' : 'add-circle-outline'}
                   size={18}
-                  color={joined ? colors.primary : colors.primaryForeground}
+                  color={joined ? colors.primary : colors.accentForeground}
                 />
                 <Text
                   style={{
-                    color: joined ? colors.primary : colors.primaryForeground,
+                    color: joined ? colors.primary : colors.accentForeground,
                     fontFamily: fonts.bodySemi,
                     fontSize: 14,
                   }}
                 >
-                  {joined ? 'You\'re in' : 'Join event'}
+                  {joined ? "You're in" : 'Join Event'}
                 </Text>
               </>
             )}

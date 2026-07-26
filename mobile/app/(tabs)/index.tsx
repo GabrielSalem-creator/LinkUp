@@ -18,7 +18,7 @@ import EventCard from '@/components/events/EventCard';
 import EmptyState from '@/components/ui/EmptyState';
 import IconButton from '@/components/ui/IconButton';
 import ScreenHeader from '@/components/ui/ScreenHeader';
-import { SPORTS, fonts, radius } from '@/constants/theme';
+import { SPORT_ORDER, SPORTS, fonts, radius, sportIcons } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/ThemeContext';
@@ -144,7 +144,7 @@ export default function EventsScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       <ScreenHeader
         title="LinkUp"
-        subtitle="Lebanon clubs · upcoming sessions"
+        subtitle="Discover events near you"
         large
         right={
           <>
@@ -157,6 +157,64 @@ export default function EventsScreen() {
           </>
         }
       />
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.catRow}
+        style={styles.catScroll}
+      >
+        <Pressable
+          onPress={() => setSelectedSports([])}
+          style={[
+            styles.catChip,
+            {
+              backgroundColor: selectedSports.length === 0 ? colors.accent : colors.card,
+              borderColor: selectedSports.length === 0 ? colors.accent : colors.border,
+            },
+          ]}
+        >
+          <Ionicons
+            name="apps-outline"
+            size={18}
+            color={selectedSports.length === 0 ? '#fff' : colors.primary}
+          />
+          <Text
+            style={{
+              color: selectedSports.length === 0 ? '#fff' : colors.foreground,
+              fontFamily: fonts.bodySemi,
+              fontSize: 12,
+            }}
+          >
+            All
+          </Text>
+        </Pressable>
+        {SPORT_ORDER.slice(0, 8).map((s) => {
+          const on = selectedSports.includes(s);
+          return (
+            <Pressable
+              key={s}
+              onPress={() => toggleSport(s)}
+              style={[
+                styles.catChip,
+                {
+                  backgroundColor: on ? colors.accent : colors.card,
+                  borderColor: on ? colors.accent : colors.border,
+                },
+              ]}
+            >
+              <Ionicons
+                name={(sportIcons[s] || 'ellipse-outline') as keyof typeof Ionicons.glyphMap}
+                size={18}
+                color={on ? '#fff' : colors.primary}
+              />
+              <Text style={{ color: on ? '#fff' : colors.foreground, fontFamily: fonts.bodySemi, fontSize: 12 }}>
+                {s}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
 
       {loading ? (
         <View style={styles.center}>
@@ -271,9 +329,9 @@ export default function EventsScreen() {
               </Pressable>
               <Pressable
                 onPress={() => setShowFilters(false)}
-                style={[styles.btnPrimary, { backgroundColor: colors.primary }]}
+                style={[styles.btnPrimary, { backgroundColor: colors.accent }]}
               >
-                <Text style={{ color: colors.primaryForeground, fontFamily: fonts.bodySemi }}>Apply</Text>
+                <Text style={{ color: colors.accentForeground, fontFamily: fonts.bodySemi }}>Apply</Text>
               </Pressable>
             </View>
           </View>
@@ -286,6 +344,17 @@ export default function EventsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  catScroll: { maxHeight: 56, flexGrow: 0 },
+  catRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 8, alignItems: 'center' },
+  catChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: radius.full,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
   list: { padding: 16, paddingBottom: 32 },
   dayBlock: { marginBottom: 8 },
   dayLabel: {
@@ -294,8 +363,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     letterSpacing: -0.2,
   },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(10,16,14,0.45)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(19,52,64,0.55)', justifyContent: 'flex-end' },
+  sheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 36 },
   sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   sheetTitle: { fontFamily: fonts.headingSemi, fontSize: 18 },
   filterLabel: {

@@ -19,6 +19,7 @@ import SportBadge from '@/components/ui/SportBadge';
 import { fonts } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
 import { api } from '@/lib/api';
+import { formatScore, scoreActivities } from '@/lib/scoring';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Activity, Club, ClubEvent, MerchItem } from '@/types';
 
@@ -71,13 +72,21 @@ export default function ClubDetailScreen() {
     load();
   }, [load]);
 
-  const leaderboard = Object.values(
-    activities.reduce<Record<string, { name: string; km: number }>>((acc, a) => {
-      if (!acc[a.user_email]) acc[a.user_email] = { name: a.user_name || a.user_email, km: 0 };
-      acc[a.user_email].km += a.distance_km;
+  const emails = Object.values(
+    activities.reduce<Record<string, { email: string; name: string }>>((acc, a) => {
+      if (!acc[a.user_email]) {
+        acc[a.user_email] = { email: a.user_email, name: a.user_name || a.user_email };
+      }
       return acc;
-    }, {})
-  ).sort((a, b) => b.km - a.km);
+    }, {}),
+  );
+  const leaderboard = club
+    ? scoreActivities(activities, {
+        emails,
+        sports: [club.sport],
+        metricSport: club.sport,
+      })
+    : [];
 
   const toggleJoin = async () => {
     if (!user || !club) return;
@@ -137,10 +146,19 @@ export default function ClubDetailScreen() {
         <View style={styles.body}>
           <View style={styles.headerRow}>
             {club.logo_url ? (
-              <Image source={{ uri: club.logo_url }} style={styles.logo} contentFit="cover" />
+              <Image
+                source={{ uri: club.logo_url }}
+                style={[styles.logo, { borderColor: colors.background }]}
+                contentFit="cover"
+              />
             ) : (
-              <View style={[styles.logoFallback, { backgroundColor: colors.primary }]}>
-                <Text style={styles.letter}>{club.name[0]}</Text>
+              <View
+                style={[
+                  styles.logoFallback,
+                  { backgroundColor: colors.primary, borderColor: colors.background },
+                ]}
+              >
+                <Text style={[styles.letter, { color: colors.primaryForeground }]}>{club.name[0]}</Text>
               </View>
             )}
             <View style={{ flex: 1 }}>
@@ -164,7 +182,7 @@ export default function ClubDetailScreen() {
           <View style={styles.actions}>
             <Pressable
               onPress={toggleJoin}
-              style={[styles.joinBtn, { backgroundColor: joined ? colors.secondary : colors.primary }]}
+              style={[styles.joinBtn, { backgroundColor: joined ? colors.secondary : colors.accent }]}
             >
               <Text style={{ color: joined ? colors.foreground : '#fff', fontFamily: fonts.bodySemi }}>
                 {joined ? 'Joined' : 'Join Club'}
@@ -215,7 +233,7 @@ export default function ClubDetailScreen() {
               : tab === 'leaderboard'
                 ? leaderboard.map((row, i) => (
                     <View
-                      key={row.name + i}
+                      key={row.email}
                       style={[styles.lbRow, { backgroundColor: colors.card, borderColor: colors.border }]}
                     >
                       <Text style={{ fontFamily: fonts.bodyBold, color: colors.mutedForeground, width: 24 }}>
@@ -223,7 +241,7 @@ export default function ClubDetailScreen() {
                       </Text>
                       <Text style={{ flex: 1, fontFamily: fonts.bodySemi, color: colors.foreground }}>{row.name}</Text>
                       <Text style={{ fontFamily: fonts.headingSemi, color: colors.primary }}>
-                        {row.km.toFixed(1)} km
+                        {formatScore(row.value, row.metric)}
                       </Text>
                     </View>
                   ))
@@ -262,7 +280,7 @@ const styles = StyleSheet.create({
   cover: { width: '100%', height: '100%' },
   body: { padding: 16, marginTop: -28 },
   headerRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-end' },
-  logo: { width: 72, height: 72, borderRadius: 18, borderWidth: 3, borderColor: '#fff' },
+  logo: { width: 72, height: 72, borderRadius: 18, borderWidth: 3 },
   logoFallback: {
     width: 72,
     height: 72,
@@ -270,27 +288,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: '#fff',
   },
-  letter: { color: '#fff', fontFamily: fonts.heading, fontSize: 26 },
+  letter: { fontFamily: fonts.heading, fontSize: 26 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   name: { fontFamily: fonts.heading, fontSize: 20, flexShrink: 1 },
   desc: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, marginTop: 14 },
   actions: { flexDirection: 'row', gap: 8, marginTop: 16 },
-  joinBtn: { flex: 1, height: 44, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
-  iconBtn: { width: 44, height: 44, borderRadius: 999, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  joinBtn: { flex: 1, height: 48, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  iconBtn: { width: 48, height: 48, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   tabs: { flexDirection: 'row', borderRadius: 999, padding: 4, marginTop: 20 },
-  tab: { flex: 1, height: 34, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+  tab: { flex: 1, height: 36, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
   lbRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 12,
     marginBottom: 8,
   },
   merchGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  merchCard: { width: '47%', borderWidth: 1, borderRadius: 14, padding: 10 },
-  merchImg: { width: '100%', height: 120, borderRadius: 10 },
+  merchCard: { width: '47%', borderWidth: 1, borderRadius: 16, padding: 10 },
+  merchImg: { width: '100%', height: 120, borderRadius: 12 },
 });

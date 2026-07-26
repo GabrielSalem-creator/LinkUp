@@ -219,6 +219,81 @@ export const appwriteApi = {
         return null;
       }
     },
+    async create(input: {
+      name: string;
+      sport: Club['sport'];
+      city: string;
+      description?: string;
+      owner_email: string;
+      contact_email: string;
+      club_password: string;
+      instagram_link?: string;
+      logo_url?: string;
+    }): Promise<Club> {
+      const slug =
+        input.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '') || 'club';
+      const data: Record<string, unknown> = {
+        name: input.name,
+        slug: `${slug}-${Date.now().toString(36).slice(-4)}`,
+        sport: input.sport,
+        city: input.city,
+        owner_email: input.owner_email,
+        club_password: input.club_password,
+        member_count: 0,
+        is_verified: false,
+        subscription_status: 'inactive',
+        payment_intent: false,
+      };
+      if (input.description) data.description = input.description;
+      if (input.contact_email) data.contact_email = input.contact_email;
+      if (input.instagram_link) data.instagram_link = input.instagram_link;
+      if (input.logo_url) data.logo_url = input.logo_url;
+
+      try {
+        const created = await databases.createDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.clubs,
+          documentId: ID.unique(),
+          data,
+        });
+        return mapClub(created as never);
+      } catch {
+        // Appwrite may not have contact_email / payment_intent attrs yet
+        delete data.contact_email;
+        delete data.payment_intent;
+        const created = await databases.createDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.clubs,
+          documentId: ID.unique(),
+          data,
+        });
+        const club = mapClub(created as never);
+        club.contact_email = input.contact_email;
+        return club;
+      }
+    },
+    async markPaymentIntent(clubId: string): Promise<Club | null> {
+      try {
+        const updated = await databases.updateDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.clubs,
+          documentId: clubId,
+          data: { payment_intent: true, subscription_status: 'inactive' },
+        });
+        return mapClub(updated as never);
+      } catch {
+        try {
+          const club = await appwriteApi.clubs.get(clubId);
+          if (club) club.payment_intent = true;
+          return club;
+        } catch {
+          return null;
+        }
+      }
+    },
   },
 
   events: {
@@ -232,6 +307,18 @@ export const appwriteApi = {
         Query.orderAsc('date'),
       ]);
       return docs.map((d) => mapEvent(d as never));
+    },
+    async get(id: string): Promise<ClubEvent | null> {
+      try {
+        const doc = await databases.getDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.club_events,
+          documentId: id,
+        });
+        return mapEvent(doc as never);
+      } catch {
+        return null;
+      }
     },
     async create(input: Omit<ClubEvent, 'id'>): Promise<ClubEvent> {
       const data: Record<string, unknown> = {
@@ -333,6 +420,28 @@ export const appwriteApi = {
     async list(): Promise<Activity[]> {
       const docs = await listAll(COLLECTION.activities, [Query.orderDesc('date')]);
       return docs.map((d) => mapActivity(d as never));
+    },
+    async create(input: Omit<Activity, 'id'>): Promise<Activity> {
+      const data: Record<string, unknown> = {
+        user_email: input.user_email,
+        sport: input.sport,
+        distance_km: input.distance_km || 0,
+        date: input.date,
+      };
+      if (input.user_name) data.user_name = input.user_name;
+      if (input.club_id) data.club_id = input.club_id;
+      if (input.club_name) data.club_name = input.club_name;
+      if (input.duration_minutes != null) data.duration_minutes = input.duration_minutes;
+      if (input.notes) data.notes = input.notes;
+      if (input.photo_url) data.photo_url = input.photo_url;
+
+      const created = await databases.createDocument({
+        databaseId: dbId,
+        collectionId: COLLECTION.activities,
+        documentId: ID.unique(),
+        data,
+      });
+      return mapActivity(created as never);
     },
   },
 
@@ -445,6 +554,51 @@ export const appwriteApi = {
       });
       return mapEventParticipant(created as never);
     },
+    async complete(
+      participant: EventParticipant,
+      code: string,
+      user: User,
+    ): Promise<Activity> {
+      const eventDoc = await databases.getDocument({
+        databaseId: dbId,
+        collectionId: COLLECTION.club_events,
+        documentId: participant.event_id,
+      });
+      const event = mapEvent(eventDoc as never);
+      const expected = (event.attendance_password || '').trim().toUpperCase();
+      if (!expected || expected !== code.trim().toUpperCase()) {
+        throw new Error('Incorrect event code');
+      }
+
+      const activity = await appwriteApi.activities.create({
+        user_email: user.email,
+        user_name: user.full_name,
+        club_id: event.club_id,
+        club_name: event.club_name || participant.club_name,
+        sport: (event.sport || 'other') as Activity['sport'],
+        distance_km: event.distance_km || 0,
+        duration_minutes: undefined,
+        date: event.date,
+        notes: `Attended event: ${event.title}`,
+      });
+
+      try {
+        await databases.deleteDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.event_participants,
+          documentId: participant.id,
+        });
+      } catch {
+        await databases.updateDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.event_participants,
+          documentId: participant.id,
+          data: { confirmed: true },
+        });
+      }
+
+      return activity;
+    },
   },
 
   friendships: {
@@ -555,6 +709,39 @@ export const appwriteApi = {
         Query.orderDesc('date'),
       ]);
       return docs.map((d) => mapMemory(d as never));
+    },
+    async create(input: Omit<Memory, 'id'>): Promise<Memory> {
+      const data: Record<string, unknown> = {
+        user_email: input.user_email,
+        title: input.title,
+        photo_url: input.photo_url,
+        date: input.date,
+      };
+      if (input.location) data.location = input.location;
+      if (input.event_id) data.event_id = input.event_id;
+      if (input.event_title) data.event_title = input.event_title;
+      if (input.club_name) data.club_name = input.club_name;
+
+      try {
+        const created = await databases.createDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.memories,
+          documentId: ID.unique(),
+          data,
+        });
+        return mapMemory(created as never);
+      } catch {
+        delete data.event_id;
+        delete data.event_title;
+        delete data.club_name;
+        const created = await databases.createDocument({
+          databaseId: dbId,
+          collectionId: COLLECTION.memories,
+          documentId: ID.unique(),
+          data,
+        });
+        return mapMemory(created as never);
+      }
     },
   },
 

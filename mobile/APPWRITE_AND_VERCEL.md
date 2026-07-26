@@ -159,3 +159,11 @@ Follow prompts; set the same env vars when asked.
 | Empty Events list | Run `npm run seed:appwrite` |
 | `Missing APPWRITE_API_KEY` | Paste key into `mobile/.env` |
 | Vercel blank page | Confirm build logs show `Exported: dist` and Output Directory matches |
+
+---
+
+## Côte Sport stubs (MVP)
+
+- **Club subscription:** `CLUB_SUBSCRIPTION_USD = 0` in `constants/theme.ts`. Whish pay button records `payment_intent` only.
+- **Strava / Apple Health:** UI in `/connections` with local AsyncStorage toggles — no OAuth/HealthKit yet.
+- **Event completion codes:** stored as `attendance_password` on `club_events`; users complete from Profile → Events.

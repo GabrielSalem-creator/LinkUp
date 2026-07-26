@@ -18,13 +18,14 @@ import { useAuth } from '@/lib/AuthContext';
 import { useTheme } from '@/lib/ThemeContext';
 
 export default function LoginScreen() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const { login, register, loginDemo } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const submit = async () => {
     if (!email.trim() || password.length < 8) {
@@ -57,102 +58,125 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colors.primary }]}>
       <LinearGradient
-        colors={
-          isDark
-            ? ['#0F2A22', '#0A100E', '#0A100E']
-            : ['#C8EDE0', '#E8F5F0', '#F2F5F4']
-        }
+        colors={['#133440', '#1A4A52', '#0C1A20']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
+      <View style={styles.glow} />
       <SafeAreaView style={styles.safe}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={styles.wrap}
         >
           <View style={styles.hero}>
-            <Text style={[styles.brand, { color: colors.primary }]}>LinkUp</Text>
-            <Text style={[styles.headline, { color: colors.foreground }]}>
-              Train with Lebanon&apos;s clubs
-            </Text>
-            <Text style={[styles.sub, { color: colors.mutedForeground }]}>
-              Events, leagues, and teammates — one community for athletes.
-            </Text>
+            <View style={[styles.mark, { backgroundColor: colors.accent }]}>
+              <Text style={styles.markText}>Lu</Text>
+            </View>
+            <Text style={styles.brand}>LinkUp</Text>
+            <Text style={styles.headline}>Train by the coast. Connect with your club.</Text>
+            <Text style={styles.sub}>Events, leagues, and teammates across Lebanon.</Text>
           </View>
 
-          <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {mode === 'register' ? (
+          {!showForm ? (
+            <View style={styles.ctaCol}>
+              <Pressable
+                onPress={() => {
+                  setMode('register');
+                  setShowForm(true);
+                }}
+                style={({ pressed }) => [
+                  styles.coralBtn,
+                  { backgroundColor: colors.accent, opacity: pressed ? 0.9 : 1 },
+                ]}
+              >
+                <Text style={styles.coralText}>Get Started</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setMode('login');
+                  setShowForm(true);
+                }}
+                style={({ pressed }) => [
+                  styles.ghostBtn,
+                  { opacity: pressed ? 0.85 : 1 },
+                ]}
+              >
+                <Text style={styles.ghostText}>Log In</Text>
+              </Pressable>
+              <Pressable onPress={demo} disabled={busy} style={styles.demoLink}>
+                <Text style={styles.demoText}>{busy ? 'Loading…' : 'Try live demo'}</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View style={[styles.panel, { backgroundColor: colors.background }]}>
+              <Text style={[styles.panelTitle, { color: colors.foreground }]}>
+                {mode === 'login' ? 'Welcome back' : 'Create account'}
+              </Text>
+              {mode === 'register' ? (
+                <TextInput
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Full name"
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[
+                    styles.input,
+                    { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.card },
+                  ]}
+                />
+              ) : null}
               <TextInput
-                value={name}
-                onChangeText={setName}
-                placeholder="Full name"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholder="Email"
                 placeholderTextColor={colors.mutedForeground}
                 style={[
                   styles.input,
-                  { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.secondary },
+                  { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.card },
                 ]}
               />
-            ) : null}
-
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              placeholder="Email"
-              placeholderTextColor={colors.mutedForeground}
-              style={[
-                styles.input,
-                { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.secondary },
-              ]}
-            />
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholder="Password (min 8)"
-              placeholderTextColor={colors.mutedForeground}
-              style={[
-                styles.input,
-                { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.secondary },
-              ]}
-            />
-
-            <Pressable
-              onPress={submit}
-              disabled={busy}
-              style={({ pressed }) => [
-                styles.primary,
-                { backgroundColor: colors.primary, opacity: busy ? 0.7 : pressed ? 0.92 : 1 },
-              ]}
-            >
-              {busy ? (
-                <ActivityIndicator color={colors.primaryForeground} />
-              ) : (
-                <Text style={[styles.primaryText, { color: colors.primaryForeground }]}>
-                  {mode === 'login' ? 'Sign in' : 'Create account'}
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                placeholder="Password (min 8)"
+                placeholderTextColor={colors.mutedForeground}
+                style={[
+                  styles.input,
+                  { borderColor: colors.border, color: colors.foreground, backgroundColor: colors.card },
+                ]}
+              />
+              <Pressable
+                onPress={submit}
+                disabled={busy}
+                style={({ pressed }) => [
+                  styles.coralBtn,
+                  { backgroundColor: colors.accent, opacity: busy ? 0.7 : pressed ? 0.92 : 1 },
+                ]}
+              >
+                {busy ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.coralText}>{mode === 'login' ? 'Log In' : 'Get Started'}</Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => setMode(mode === 'login' ? 'register' : 'login')}
+                style={styles.linkBtn}
+              >
+                <Text style={{ color: colors.mutedForeground, fontFamily: fonts.bodyMed, fontSize: 14 }}>
+                  {mode === 'login' ? 'New here? Create an account' : 'Have an account? Log in'}
                 </Text>
-              )}
-            </Pressable>
-
-            <Pressable onPress={() => setMode(mode === 'login' ? 'register' : 'login')} style={styles.linkBtn}>
-              <Text style={{ color: colors.mutedForeground, fontFamily: fonts.bodyMed, fontSize: 14 }}>
-                {mode === 'login' ? 'New here? Create an account' : 'Have an account? Sign in'}
-              </Text>
-            </Pressable>
-          </View>
-
-          <Pressable
-            onPress={demo}
-            disabled={busy}
-            style={({ pressed }) => [
-              styles.secondary,
-              { borderColor: colors.border, backgroundColor: colors.card, opacity: pressed ? 0.9 : 1 },
-            ]}
-          >
-            <Text style={{ color: colors.foreground, fontFamily: fonts.bodySemi }}>Try live demo</Text>
-          </Pressable>
+              </Pressable>
+              <Pressable onPress={() => setShowForm(false)} style={styles.linkBtn}>
+                <Text style={{ color: colors.primary, fontFamily: fonts.bodySemi, fontSize: 13 }}>Back</Text>
+              </Pressable>
+            </View>
+          )}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
@@ -161,24 +185,61 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  glow: {
+    position: 'absolute',
+    top: -80,
+    right: -40,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(90,189,183,0.22)',
+  },
   safe: { flex: 1 },
-  wrap: { flex: 1, padding: 24, justifyContent: 'center' },
-  hero: { marginBottom: 28 },
-  brand: { fontFamily: fonts.heading, fontSize: 42, letterSpacing: -1.2, marginBottom: 10 },
+  wrap: { flex: 1, padding: 24, justifyContent: 'flex-end', paddingBottom: 36 },
+  hero: { flex: 1, justifyContent: 'center', paddingBottom: 24 },
+  mark: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  markText: { color: '#fff', fontFamily: fonts.heading, fontSize: 22 },
+  brand: { fontFamily: fonts.heading, fontSize: 44, letterSpacing: -1.2, color: '#FFF2E2', marginBottom: 12 },
   headline: {
     fontFamily: fonts.headingSemi,
     fontSize: 22,
     lineHeight: 28,
-    letterSpacing: -0.3,
+    color: '#FFF2E2',
     marginBottom: 8,
-    maxWidth: 320,
+    maxWidth: 300,
   },
-  sub: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22, maxWidth: 340 },
+  sub: { fontFamily: fonts.body, fontSize: 15, lineHeight: 22, color: 'rgba(255,242,226,0.72)', maxWidth: 320 },
+  ctaCol: { gap: 12 },
+  coralBtn: {
+    height: 54,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  coralText: { color: '#fff', fontFamily: fonts.bodySemi, fontSize: 17 },
+  ghostBtn: {
+    height: 54,
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,242,226,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ghostText: { color: '#FFF2E2', fontFamily: fonts.bodySemi, fontSize: 16 },
+  demoLink: { alignItems: 'center', paddingVertical: 10 },
+  demoText: { color: 'rgba(255,242,226,0.7)', fontFamily: fonts.bodyMed, fontSize: 14 },
   panel: {
-    borderWidth: 1,
     borderRadius: radius.xl,
-    padding: 16,
+    padding: 18,
   },
+  panelTitle: { fontFamily: fonts.headingSemi, fontSize: 20, marginBottom: 14 },
   input: {
     borderWidth: 1,
     borderRadius: radius.md,
@@ -188,21 +249,5 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 15,
   },
-  primary: {
-    height: 52,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 6,
-  },
-  primaryText: { fontFamily: fonts.bodySemi, fontSize: 16 },
-  linkBtn: { alignItems: 'center', marginTop: 14, paddingVertical: 4 },
-  secondary: {
-    marginTop: 14,
-    height: 50,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  linkBtn: { alignItems: 'center', marginTop: 12, paddingVertical: 4 },
 });

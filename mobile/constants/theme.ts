@@ -1,45 +1,55 @@
+/** Côte Sport — Energetic · Mediterranean · Vibrant */
 export const colors = {
   light: {
-    background: '#F2F5F4',
-    foreground: '#0F1714',
+    background: '#FFF2E2',
+    foreground: '#1D1D1B',
     card: '#FFFFFF',
-    cardForeground: '#0F1714',
-    primary: '#0D8F72',
+    cardForeground: '#1D1D1B',
+    primary: '#133440',
     primaryForeground: '#FFFFFF',
-    primarySoft: '#D8F3EA',
-    secondary: '#E7EEEC',
-    secondaryForeground: '#0F1714',
-    muted: '#E7EEEC',
-    mutedForeground: '#5E6B66',
-    accent: '#E8A317',
-    accentForeground: '#1A1408',
-    border: '#D5E0DC',
+    primarySoft: '#D6E8E6',
+    secondary: '#F5E6D4',
+    secondaryForeground: '#1D1D1B',
+    muted: '#F5E6D4',
+    mutedForeground: '#6B6560',
+    accent: '#FF5E4A',
+    accentForeground: '#FFFFFF',
+    aqua: '#5ABDB7',
+    aquaForeground: '#0B2A28',
+    border: '#E8D5C0',
     destructive: '#E04545',
-    success: '#0D8F72',
-    overlay: 'rgba(15, 23, 20, 0.45)',
+    success: '#5ABDB7',
+    overlay: 'rgba(19, 52, 64, 0.55)',
   },
   dark: {
-    background: '#0A100E',
-    foreground: '#EEF3F1',
-    card: '#121A17',
-    cardForeground: '#EEF3F1',
-    primary: '#2BC49A',
-    primaryForeground: '#042018',
-    primarySoft: '#16352C',
-    secondary: '#1A2420',
-    secondaryForeground: '#EEF3F1',
-    muted: '#1A2420',
-    mutedForeground: '#8FA39A',
-    accent: '#F0B429',
-    accentForeground: '#1A1408',
-    border: '#24302B',
+    background: '#0C1A20',
+    foreground: '#FFF2E2',
+    card: '#133440',
+    cardForeground: '#FFF2E2',
+    primary: '#5ABDB7',
+    primaryForeground: '#0C1A20',
+    primarySoft: '#1A3A42',
+    secondary: '#1A3A42',
+    secondaryForeground: '#FFF2E2',
+    muted: '#1A3A42',
+    mutedForeground: '#A8B8B6',
+    accent: '#FF5E4A',
+    accentForeground: '#FFFFFF',
+    aqua: '#5ABDB7',
+    aquaForeground: '#0C1A20',
+    border: '#2A4A52',
     destructive: '#F07171',
-    success: '#2BC49A',
+    success: '#5ABDB7',
     overlay: 'rgba(0, 0, 0, 0.55)',
   },
 } as const;
 
 export type ThemeColors = (typeof colors)['light'] | (typeof colors)['dark'];
+
+/** MVP club subscription — flip later */
+export const CLUB_SUBSCRIPTION_USD = 0;
+
+export const INVITE_BASE_URL = 'https://linkup-gold-gamma.vercel.app';
 
 export const fonts = {
   heading: 'SpaceGrotesk_700Bold',
@@ -52,10 +62,10 @@ export const fonts = {
 } as const;
 
 export const radius = {
-  sm: 10,
-  md: 14,
-  lg: 18,
-  xl: 24,
+  sm: 12,
+  md: 18,
+  lg: 24,
+  xl: 28,
   full: 999,
 } as const;
 
@@ -78,6 +88,8 @@ export const SPORTS = [
   'CrossFit',
   'Yoga',
   'Hiking',
+  'Tennis',
+  'Pilates',
   'Other',
 ] as const;
 
@@ -91,24 +103,27 @@ export const SPORT_ORDER = [
   'crossfit',
   'yoga',
   'hiking',
+  'tennis',
+  'pilates',
   'other',
 ] as const;
 
 export const sportColors: Record<string, string> = {
-  running: '#0D8F72',
-  walking: '#6BA33A',
-  biking: '#2F6FED',
-  swimming: '#0891B2',
-  hyrox: '#E67E22',
-  triathlon: '#7C5CFC',
-  crossfit: '#E04545',
-  yoga: '#D946A6',
+  running: '#FF5E4A',
+  walking: '#5ABDB7',
+  biking: '#133440',
+  swimming: '#5ABDB7',
+  hyrox: '#FF5E4A',
+  triathlon: '#133440',
+  crossfit: '#FF5E4A',
+  yoga: '#5ABDB7',
   hiking: '#C47B16',
-  other: '#64748B',
-  running_walking: '#0D8F72',
+  tennis: '#133440',
+  pilates: '#5ABDB7',
+  other: '#6B6560',
+  running_walking: '#FF5E4A',
 };
 
-/** Ionicons names matched to sports for consistent UI */
 export const sportIcons: Record<string, string> = {
   walking: 'walk-outline',
   running: 'flash-outline',
@@ -119,6 +134,8 @@ export const sportIcons: Record<string, string> = {
   crossfit: 'fitness-outline',
   yoga: 'leaf-outline',
   hiking: 'trail-sign-outline',
+  tennis: 'tennisball',
+  pilates: 'fitness-outline',
   other: 'ellipse-outline',
   running_walking: 'walk-outline',
 };
