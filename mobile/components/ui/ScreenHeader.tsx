@@ -16,7 +16,7 @@ export default function ScreenHeader({ title, subtitle, right, large }: Props) {
   const { colors } = useTheme();
   return (
     <View style={[styles.wrap, { borderBottomColor: colors.border }]}>
-      <View style={{ flex: 1 }}>
+      <View style={styles.titleWrap}>
         <Text
           style={[
             large ? styles.brand : styles.title,
@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
     gap: 10,
     flexWrap: 'wrap',
   },
+  titleWrap: { flexGrow: 1, flexShrink: 1, flexBasis: 160, minWidth: 140 },
   brand: { fontFamily: fonts.heading, fontSize: 26, letterSpacing: -0.6 },
   title: { fontFamily: fonts.heading, fontSize: 22, letterSpacing: -0.4 },
   sub: { fontFamily: fonts.body, fontSize: 13, marginTop: 2 },

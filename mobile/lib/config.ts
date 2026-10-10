@@ -23,6 +23,5 @@ export const config = {
     'linkup',
 };
 
-/** True when a project ID is set (Appwrite mode). Set EXPO_PUBLIC_USE_MOCK=1 to force mock. */
-export const useAppwrite =
-  process.env.EXPO_PUBLIC_USE_MOCK !== '1' && Boolean(config.appwriteProjectId);
+/** Always true: the app only talks to Appwrite. */
+export const useAppwrite = true;

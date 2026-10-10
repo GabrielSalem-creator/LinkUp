@@ -1,7 +1,6 @@
 import { type Href, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import Button from '@/components/ui/Button';
 import SportBadge from '@/components/ui/SportBadge';
 import { fonts, radius } from '@/constants/theme';
 import { api } from '@/lib/api';
+import { notify } from '@/lib/notify';
 import { generateCode } from '@/lib/scoring';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Club, ClubEvent } from '@/types';
@@ -45,7 +45,7 @@ export default function ClubPortalScreen() {
     if (!selectedClub) return;
     const ok = await api.verifyClubPassword(selectedClub.id, password);
     if (!ok) {
-      Alert.alert('Wrong password', 'Demo tip: use demo1234 for Run Club Beirut');
+      notify('Wrong password', 'Demo tip: use demo1234 for Run Club Beirut');
       return;
     }
     setUnlocked(true);
@@ -53,7 +53,7 @@ export default function ClubPortalScreen() {
 
   const createEvent = async () => {
     if (!selectedClub || !title.trim() || !date.trim()) {
-      Alert.alert('Missing fields', 'Title and date (YYYY-MM-DD) are required');
+      notify('Missing fields', 'Title and date (YYYY-MM-DD) are required');
       return;
     }
     const attendance_password = generateCode('', 6);
@@ -71,12 +71,12 @@ export default function ClubPortalScreen() {
       setEvents((prev) => [created, ...prev]);
       setTitle('');
       setLastCode(attendance_password);
-      Alert.alert(
+      notify(
         'Event published',
         `Share this completion code with attendees at the end of the event:\n\n${attendance_password}\n\nOnly you (the creator) see this code here.`,
       );
     } catch (e) {
-      Alert.alert('Could not create event', e instanceof Error ? e.message : 'Try again');
+      notify('Could not create event', e instanceof Error ? e.message : 'Try again');
     }
   };
 

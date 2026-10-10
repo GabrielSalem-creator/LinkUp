@@ -2,7 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,7 @@ import {
 import EmptyState from '@/components/ui/EmptyState';
 import { fonts } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
+import { notify } from '@/lib/notify';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Friendship, User } from '@/types';
@@ -44,7 +44,7 @@ export default function PeopleScreen() {
       setAccepted(a);
       setPeople(list);
     } catch (e) {
-      Alert.alert('Could not load people', e instanceof Error ? e.message : 'Try again');
+      notify('Could not load people', e instanceof Error ? e.message : 'Try again');
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export default function PeopleScreen() {
       await api.friendships.request(user, person);
       await load();
     } catch (e) {
-      Alert.alert('Follow failed', e instanceof Error ? e.message : 'Try again');
+      notify('Follow failed', e instanceof Error ? e.message : 'Try again');
     } finally {
       setBusyEmail(null);
     }

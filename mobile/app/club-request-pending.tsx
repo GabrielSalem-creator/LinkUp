@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Button from '@/components/ui/Button';
 import { CLUB_SUBSCRIPTION_USD, fonts, radius, space } from '@/constants/theme';
 import { api } from '@/lib/api';
+import { notify } from '@/lib/notify';
 import { useTheme } from '@/lib/ThemeContext';
 
 export default function ClubRequestPendingScreen() {
@@ -23,14 +24,14 @@ export default function ClubRequestPendingScreen() {
       if (params.clubId) {
         await api.clubs.markPaymentIntent(params.clubId);
       }
-      Alert.alert(
+      notify(
         CLUB_SUBSCRIPTION_USD === 0 ? 'MVP — free trial' : 'Whish',
         CLUB_SUBSCRIPTION_USD === 0
           ? 'No charge during MVP. We recorded your subscription intent. Live Whish payment will be wired later.'
           : `Whish checkout for $${CLUB_SUBSCRIPTION_USD}/mo will open here once merchant credentials are connected.`,
       );
     } catch (e) {
-      Alert.alert('Could not record payment', e instanceof Error ? e.message : 'Try again');
+      notify('Could not record payment', e instanceof Error ? e.message : 'Try again');
     } finally {
       setPaying(false);
     }

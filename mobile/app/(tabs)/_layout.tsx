@@ -40,8 +40,9 @@ export default function TabLayout() {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const [pending, setPending] = useState(0);
-  const bottomPad = Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6);
-  const tabHeight = 56 + bottomPad;
+  const bottomPad = Math.max(insets.bottom, Platform.OS === 'web' ? 10 : 8);
+  // icon wrap (30) + label line (16) + top padding (6) + gaps; never let content spill below the bar
+  const tabHeight = 60 + bottomPad;
 
   useEffect(() => {
     if (!user?.email) return;
@@ -66,13 +67,15 @@ export default function TabLayout() {
           shadowOpacity: 0,
         },
         tabBarItemStyle: {
-          paddingVertical: 2,
+          paddingVertical: 0,
         },
         tabBarLabelStyle: {
           fontFamily: fonts.bodySemi,
           fontSize: 11,
-          marginTop: 1,
+          lineHeight: 14,
+          marginTop: 2,
         },
+        tabBarIconStyle: { marginTop: 0 },
       }}
     >
       <Tabs.Screen
@@ -133,7 +136,7 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   iconWrap: {
     width: 48,
-    height: 32,
+    height: 30,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',

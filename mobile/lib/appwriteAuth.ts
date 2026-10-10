@@ -58,7 +58,13 @@ export async function createDemoSessionRest() {
 }
 
 export async function createAnonymousSessionRest() {
-  return postSession('/account/sessions/anonymous');
+  try {
+    await clearPersistedSession();
+    await account.createAnonymousSession();
+    return { userId: 'sdk' };
+  } catch {
+    return postSession('/account/sessions/anonymous');
+  }
 }
 
 export async function getAccountSafe() {

@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -21,6 +20,7 @@ import IconButton from '@/components/ui/IconButton';
 import ScreenHeader from '@/components/ui/ScreenHeader';
 import { SPORT_ORDER, SPORTS, fonts, radius, sportIcons } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
+import { notify } from '@/lib/notify';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Club, ClubEvent } from '@/types';
@@ -78,7 +78,7 @@ export default function EventsScreen() {
 
   const joinEvent = async (ev: ClubEvent) => {
     if (!user?.email) {
-      Alert.alert('Sign in required', 'Log in to join events.');
+      notify('Sign in required', 'Log in to join events.');
       return;
     }
     if (joinedIds.has(ev.id)) return;
@@ -86,9 +86,9 @@ export default function EventsScreen() {
     try {
       await api.eventParticipants.join(ev, user.email);
       setJoinedIds((prev) => new Set([...prev, ev.id]));
-      Alert.alert('Joined', `You're in for ${ev.title}`);
+      notify('Joined', `You're in for ${ev.title}`);
     } catch (e) {
-      Alert.alert('Could not join', e instanceof Error ? e.message : 'Try again');
+      notify('Could not join', e instanceof Error ? e.message : 'Try again');
     } finally {
       setJoiningId(null);
     }
@@ -353,8 +353,8 @@ export default function EventsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  catScroll: { maxHeight: 56, flexGrow: 0 },
-  catRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 8, alignItems: 'center' },
+  catScroll: { height: 62, flexGrow: 0, flexShrink: 0 },
+  catRow: { paddingHorizontal: 16, gap: 8, paddingTop: 8, paddingBottom: 10, alignItems: 'center' },
   catChip: {
     flexDirection: 'row',
     alignItems: 'center',

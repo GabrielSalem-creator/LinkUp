@@ -31,7 +31,6 @@ Then:
 - Press **`a`** / **`i`** for Android emulator / iOS simulator  
 
 Login screen: register, sign in, or continue as guest.  
-Offline mock: set `EXPO_PUBLIC_USE_MOCK=1`.
 
 ### Demo tips
 
@@ -52,8 +51,7 @@ mobile/
     club/[id]        Club detail
     people           Friends / discovery
     club-portal      Club owner portal
-  lib/api.ts         Data layer (swap mock → Base44/backend here)
-  data/mock.ts       Lebanon demo data
+  lib/api.ts         Data layer (Appwrite)
   constants/theme.ts Teal athletic theme (Space Grotesk + Inter)
 ```
 

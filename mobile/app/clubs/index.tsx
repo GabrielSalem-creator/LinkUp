@@ -57,7 +57,7 @@ export default function ClubsExploreScreen() {
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips} style={styles.chipScroll}>
         <Pressable
           onPress={() => setSport(null)}
           style={[
@@ -147,7 +147,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   input: { flex: 1, fontFamily: fonts.body, fontSize: 14 },
-  chips: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  chipScroll: { flexGrow: 0, flexShrink: 0, height: 64 },
+  chips: { paddingHorizontal: 16, paddingVertical: 12, gap: 8, alignItems: 'center' },
   chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7, marginRight: 0 },
   list: { padding: 16, paddingTop: 0, paddingBottom: 40 },
   card: { borderWidth: 1, borderRadius: 16, overflow: 'hidden', marginBottom: 12 },

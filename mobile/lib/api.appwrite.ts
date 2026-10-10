@@ -10,6 +10,7 @@ import {
   restorePersistedSession,
 } from '@/lib/appwrite';
 import {
+  createAnonymousSessionRest,
   createDemoSessionRest,
   createEmailSessionRest,
   getAccountSafe,
@@ -134,6 +135,18 @@ export const appwriteApi = {
       await createDemoSessionRest();
       const authUser = await getAccountSafe();
       return ensureProfile({ ...authUser, name: authUser.name || 'Demo Athlete' });
+    },
+
+    async loginGuest(): Promise<User> {
+      try {
+        const existing = await getAccountSafe();
+        return ensureProfile(existing);
+      } catch {
+        /* no session yet */
+      }
+      await createAnonymousSessionRest();
+      const authUser = await getAccountSafe();
+      return ensureProfile({ ...authUser, name: authUser.name || 'Guest' });
     },
 
     async register(email: string, password: string, name: string): Promise<User> {

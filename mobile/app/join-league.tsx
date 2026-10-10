@@ -1,11 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Button from '@/components/ui/Button';
 import { fonts, space } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
+import { notify } from '@/lib/notify';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/ThemeContext';
 
@@ -25,7 +26,7 @@ export default function JoinLeagueScreen() {
         await api.leagues.joinByCode(String(code), user);
         setDone(true);
       } catch (e) {
-        Alert.alert('Could not join', e instanceof Error ? e.message : 'Invalid code');
+        notify('Could not join', e instanceof Error ? e.message : 'Invalid code');
       } finally {
         setBusy(false);
       }

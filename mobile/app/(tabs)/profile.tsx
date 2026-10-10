@@ -5,7 +5,6 @@ import { type Href, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -21,6 +20,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import SportBadge from '@/components/ui/SportBadge';
 import { fonts, radius } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
+import { notify } from '@/lib/notify';
 import { api } from '@/lib/api';
 import { formatScore, metricForSport } from '@/lib/scoring';
 import { serverApi } from '@/lib/serverApi';
@@ -97,9 +97,9 @@ export default function ProfileScreen() {
       setEventCode('');
       setTab('history');
       await load();
-      Alert.alert('Completed', 'Event moved to your history.');
+      notify('Completed', 'Event moved to your history.');
     } catch (e) {
-      Alert.alert('Could not complete', e instanceof Error ? e.message : 'Check the code');
+      notify('Could not complete', e instanceof Error ? e.message : 'Check the code');
     } finally {
       setCompleting(false);
     }
@@ -107,7 +107,7 @@ export default function ProfileScreen() {
 
   const submitMemory = async () => {
     if (!user || !memoryAct || !memPhoto.trim()) {
-      Alert.alert('Photo required', 'Paste an image URL for now (upload wiring later).');
+      notify('Photo required', 'Paste an image URL for now (upload wiring later).');
       return;
     }
     setSavingMem(true);
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
       setTab('memories');
       await load();
     } catch (e) {
-      Alert.alert('Could not save', e instanceof Error ? e.message : 'Try again');
+      notify('Could not save', e instanceof Error ? e.message : 'Try again');
     } finally {
       setSavingMem(false);
     }
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statDivider: { width: 1, height: 36, backgroundColor: 'rgba(255,242,226,0.25)' },
-  actions: { flexDirection: 'row', gap: 8, marginTop: 16, alignItems: 'center' },
+  actions: { flexDirection: 'row', gap: 8, marginTop: 16, alignItems: 'center', flexWrap: 'wrap' },
   actionBtn: {
     flex: 1,
     height: 42,
