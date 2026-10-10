@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import EventCard from '@/components/events/EventCard';
+import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import IconButton from '@/components/ui/IconButton';
 import ScreenHeader from '@/components/ui/ScreenHeader';
@@ -44,6 +45,7 @@ export default function EventsScreen() {
   const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [pending, setPending] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
@@ -51,6 +53,7 @@ export default function EventsScreen() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [ev, cl] = await Promise.all([api.events.list(), api.clubs.list()]);
       setEvents(ev);
@@ -64,11 +67,10 @@ export default function EventsScreen() {
         setJoinedIds(new Set(mine.map((x) => x.event_id)));
       }
     } catch (e) {
-      console.warn('Events load failed, using offline data', e);
-      const { mockApi } = await import('@/lib/api.mock');
-      const [ev, cl] = await Promise.all([mockApi.events.list(), mockApi.clubs.list()]);
-      setEvents(ev);
-      setClubs(cl);
+      console.warn('Events load failed', e);
+      setEvents([]);
+      setClubs([]);
+      setLoadError(e instanceof Error ? e.message : 'Could not load events');
     } finally {
       setLoading(false);
     }
@@ -220,6 +222,13 @@ export default function EventsScreen() {
         <View style={styles.center}>
           <ActivityIndicator color={colors.primary} />
         </View>
+      ) : loadError ? (
+        <EmptyState
+          icon="cloud-offline-outline"
+          title="Could not load events"
+          description={loadError}
+          action={<Button label="Retry" variant="secondary" onPress={load} />}
+        />
       ) : daysWithEvents.length === 0 ? (
         <EmptyState
           icon="calendar-outline"
