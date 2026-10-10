@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { type Href, Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 import SegmentedTabs from '@/components/competition/SegmentedTabs';
 import Button from '@/components/ui/Button';
@@ -43,6 +43,7 @@ export default function BookScreen() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<{ message: string; code?: string } | null>(null);
   const [repriced, setRepriced] = useState<{ from: number; to: number; key: string } | null>(null);
+  const [mapWidth, setMapWidth] = useState(0);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -93,7 +94,8 @@ export default function BookScreen() {
   const unitPrice = selected ? selected.price_minor + selected.fee_minor : 0;
   const count = selected?.kind === 'assigned' ? seatIds.size : quantity;
   const total = unitPrice * count;
-  const wide = width >= 700;
+  // the web shell caps content at 480px, so only native tablets get the two-column layout
+  const wide = Platform.OS !== 'web' && width >= 700;
 
   const toggleSeat = (seat: VenueSeat) => {
     setSeatIds((prev) => {
@@ -231,8 +233,8 @@ export default function BookScreen() {
         ) : null}
 
         <View style={[styles.layout, wide && styles.layoutWide]}>
-          <View style={wide ? { flex: 1 } : undefined}>
-            <SectionMap offers={availability.offers} selectedId={selected?.id} onSelect={selectOffer} sport={competition?.sport} />
+          <View style={wide ? { flex: 1 } : undefined} onLayout={(e) => setMapWidth(e.nativeEvent.layout.width)}>
+            <SectionMap offers={availability.offers} selectedId={selected?.id} onSelect={selectOffer} sport={competition?.sport} width={mapWidth} />
             <View style={{ gap: 8, marginTop: 12 }} accessibilityRole="list">
               {availability.offers.map((o) => {
                 const on = o.id === selected?.id;

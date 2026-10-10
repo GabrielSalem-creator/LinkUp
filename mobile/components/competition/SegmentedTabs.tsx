@@ -22,7 +22,7 @@ export default function SegmentedTabs<T extends string>({ segments, value, onCha
             style={({ pressed }) => [
               styles.tab,
               compact && styles.compact,
-              on && { backgroundColor: colors.card, shadowOpacity: 0.08 },
+              on && { backgroundColor: colors.card, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
               pressed && { opacity: 0.85 },
               Platform.OS === 'web' ? ({ cursor: 'pointer', outlineColor: colors.accent } as object) : null,
             ]}
@@ -40,7 +40,7 @@ export default function SegmentedTabs<T extends string>({ segments, value, onCha
 
 const styles = StyleSheet.create({
   wrap: { flexDirection: 'row', borderRadius: radius.full, padding: 4, gap: 2 },
-  tab: { flex: 1, minHeight: 44, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, shadowColor: '#000', shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
+  tab: { flex: 1, minHeight: 44, borderRadius: radius.full, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
   compact: { minHeight: 40 },
   text: { fontFamily: fonts.bodySemi, fontSize: 13 },
   underline: { width: 16, height: 3, borderRadius: 2, marginTop: 3 },

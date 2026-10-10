@@ -21,10 +21,10 @@ function parseGeometry(raw: string): Geometry {
  * Section-level venue map. Sections are positioned from their geometry (0..100 grid) around the pitch.
  * Each section is a real button with a text label, so it is usable by keyboard and screen readers.
  */
-export function SectionMap({ offers, selectedId, onSelect, sport }: { offers: AvailabilityOffer[]; selectedId?: string | null; onSelect: (o: AvailabilityOffer) => void; sport?: string }) {
+export function SectionMap({ offers, selectedId, onSelect, sport, width: containerWidth }: { offers: AvailabilityOffer[]; selectedId?: string | null; onSelect: (o: AvailabilityOffer) => void; sport?: string; width?: number }) {
   const { colors } = useTheme();
-  const { width } = useWindowDimensions();
-  const size = Math.min(width - 32, 460);
+  const { width: windowWidth } = useWindowDimensions();
+  const size = Math.max(280, Math.min(containerWidth || windowWidth - 32, 460));
   const h = size * 0.78;
   const isCourt = sport === 'basketball' || sport === 'volleyball' || sport === 'handball' || sport === 'futsal';
   return (
