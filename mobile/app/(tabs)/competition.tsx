@@ -42,6 +42,7 @@ type SeasonData = {
   rankings: RankingEntry[];
   players: Record<string, Player>;
   venues: Record<string, Venue>;
+  ticketed: Set<string>;
 };
 
 export default function CompetitionScreen() {
@@ -129,6 +130,7 @@ export default function CompetitionScreen() {
       const players = await competitionApi.players(playerIds);
       const venueIds = [...new Set(matches.map((m) => m.venue_id).filter(Boolean))] as string[];
       const venues = await Promise.all(venueIds.map((id) => competitionApi.venue(id)));
+      const ticketed = await competitionApi.ticketedMatches(matches.filter((m) => m.status === 'scheduled').map((m) => m.id)).catch(() => new Set<string>());
       setData({
         teams,
         matches,
@@ -137,6 +139,7 @@ export default function CompetitionScreen() {
         rankings,
         players: Object.fromEntries(players.map((p) => [p.id, p])),
         venues: Object.fromEntries(venues.filter(Boolean).map((v) => [v!.id, v!])),
+        ticketed,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load this season');
@@ -319,7 +322,7 @@ export default function CompetitionScreen() {
             <View key={day} style={{ marginBottom: 6 }}>
               <Text style={[styles.dayLabel, { color: colors.foreground }]}>{format(parseISO(day), 'EEEE d MMMM')}</Text>
               {ms.map((m) => (
-                <MatchCard key={m.id} match={m} home={teamMap[m.home_team_id]} away={teamMap[m.away_team_id]} venue={m.venue_id ? data.venues[m.venue_id] : null} />
+                <MatchCard key={m.id} match={m} home={teamMap[m.home_team_id]} away={teamMap[m.away_team_id]} venue={m.venue_id ? data.venues[m.venue_id] : null} ticketHint={data.ticketed.has(m.id) ? 'Tickets on sale' : null} />
               ))}
             </View>
           ))

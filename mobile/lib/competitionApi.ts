@@ -306,6 +306,20 @@ export const competitionApi = {
     const docs = await list('team_media', [Query.equal('team_id', unique)], 500);
     return docs.map(mapMedia);
   },
+  /** IDs of matches that currently have an on-sale offer (sale window open). */
+  async ticketedMatches(matchIds: string[]): Promise<Set<string>> {
+    const out = new Set<string>();
+    const now = Date.now();
+    for (let i = 0; i < matchIds.length; i += 100) {
+      const chunk = matchIds.slice(i, i + 100);
+      if (!chunk.length) continue;
+      const docs = await list('ticket_offers', [Query.equal('match_id', chunk), Query.equal('status', 'on_sale')], 1000);
+      for (const d of docs.map(mapOffer)) {
+        if (Date.parse(d.sale_start) <= now && Date.parse(d.sale_end) >= now) out.add(d.match_id);
+      }
+    }
+    return out;
+  },
   async offers(matchId: string): Promise<TicketOffer[]> {
     const docs = await list('ticket_offers', [Query.equal('match_id', matchId)]);
     return docs.map(mapOffer);
