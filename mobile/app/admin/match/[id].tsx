@@ -7,6 +7,7 @@ import { matchStatusMeta } from '@/components/competition/MatchCard';
 import SegmentedTabs from '@/components/competition/SegmentedTabs';
 import StatusPill from '@/components/competition/StatusPill';
 import Button from '@/components/ui/Button';
+import Chip from '@/components/ui/Chip';
 import Notice from '@/components/ui/Notice';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { fonts, radius } from '@/constants/theme';
@@ -213,7 +214,7 @@ export default function AdminMatchScreen() {
           <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.panelTitle, { color: colors.foreground }]}>{match.status === 'final' ? 'Completed match (read-only)' : 'Cancelled match (read-only)'}</Text>
             <Text style={[styles.sub, { color: colors.mutedForeground }]}>{match.status === 'final' ? 'Corrections must carry a reason and are recorded in the audit history.' : 'Cancelled matches cannot be edited.'}</Text>
-            {match.status === 'final' ? <Button label="Correct this result" variant="secondary" onPress={() => setUnlockFinal(true)} /> : null}
+            {match.status === 'final' ? <Button label="Correct this result" icon="create-outline" variant="secondary" onPress={() => setUnlockFinal(true)} /> : null}
           </View>
         ) : null}
 
@@ -223,18 +224,7 @@ export default function AdminMatchScreen() {
             <View style={styles.chips}>
               {MATCH_STATUSES.map((s) => {
                 const allowed = canTransitionMatch(match.status, s);
-                const on = status === s;
-                return (
-                  <Text
-                    key={s}
-                    onPress={() => allowed && setStatus(s)}
-                    accessibilityRole="radio"
-                    accessibilityState={{ selected: on, disabled: !allowed }}
-                    style={[styles.chip, { backgroundColor: on ? colors.primary : colors.secondary, color: on ? colors.primaryForeground : allowed ? colors.foreground : colors.mutedForeground, textDecorationLine: allowed ? 'none' : 'line-through' }]}
-                  >
-                    {matchStatusMeta(s).label}
-                  </Text>
-                );
+                return <Chip key={s} size="sm" label={matchStatusMeta(s).label} selected={status === s} disabled={!allowed} onPress={() => setStatus(s)} role="radio" />;
               })}
             </View>
             {fieldErrors.status ? <Text style={[styles.fieldError, { color: colors.destructive }]}>{fieldErrors.status}</Text> : null}
@@ -357,8 +347,7 @@ const styles = StyleSheet.create({
   panel: { borderRadius: radius.lg, borderWidth: 1, padding: 14, gap: 8 },
   panelTitle: { fontFamily: fonts.headingSemi, fontSize: 15 },
   label: { fontFamily: fonts.bodySemi, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 4 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: radius.full, fontFamily: fonts.bodySemi, fontSize: 12, overflow: 'hidden' },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   scoreRow: { flexDirection: 'row', gap: 10 },
   input: { borderWidth: 1, borderRadius: radius.md, height: 48, paddingHorizontal: 12, fontFamily: fonts.body },
   fieldError: { fontFamily: fonts.bodyMed, fontSize: 12 },

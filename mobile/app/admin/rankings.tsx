@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import Button from '@/components/ui/Button';
+import Chip from '@/components/ui/Chip';
 import Notice from '@/components/ui/Notice';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { fonts, radius } from '@/constants/theme';
@@ -113,11 +114,9 @@ export default function AdminRankingsScreen() {
     <>
       <Stack.Screen options={{ title: `${competition?.name ?? 'Rankings'}` }} />
       <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.body}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 10 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 10 }}>
           {sportDef.rankingBoards.map((b) => (
-            <Pressable key={b.code} onPress={() => setBoard(b)} accessibilityRole="tab" accessibilityState={{ selected: board?.code === b.code }} style={[styles.chip, { backgroundColor: board?.code === b.code ? colors.primary : colors.secondary }]}>
-              <Text style={{ fontFamily: fonts.bodySemi, fontSize: 12, color: board?.code === b.code ? colors.primaryForeground : colors.foreground }}>{b.label}</Text>
-            </Pressable>
+            <Chip key={b.code} size="sm" label={b.label} selected={board?.code === b.code} onPress={() => setBoard(b)} role="tab" />
           ))}
         </ScrollView>
         {notice ? <Notice tone={notice.tone} message={notice.message} live /> : null}
@@ -145,7 +144,6 @@ export default function AdminRankingsScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, padding: 16, justifyContent: 'center' },
   body: { padding: 16, gap: 8 },
-  chip: { paddingHorizontal: 12, height: 36, borderRadius: radius.full, justifyContent: 'center' },
   lead: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, marginBottom: 6 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: radius.md, borderWidth: 1 },
   rank: { width: 24, fontFamily: fonts.bodyBold, fontSize: 12, textAlign: 'center' },

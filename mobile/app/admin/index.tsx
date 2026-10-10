@@ -8,6 +8,7 @@ import { matchStatusMeta } from '@/components/competition/MatchCard';
 import SegmentedTabs from '@/components/competition/SegmentedTabs';
 import StatusPill from '@/components/competition/StatusPill';
 import Button from '@/components/ui/Button';
+import Chip from '@/components/ui/Chip';
 import EmptyState from '@/components/ui/EmptyState';
 import Notice from '@/components/ui/Notice';
 import { SkeletonCard } from '@/components/ui/Skeleton';
@@ -153,18 +154,14 @@ export default function AdminScreen() {
     <>
       <Stack.Screen options={{ title: 'Competition admin' }} />
       <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.body}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 10 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 10 }}>
           {competitions.map((c) => (
-            <Pressable key={c.id} onPress={() => setCompetitionId(c.id)} accessibilityRole="tab" accessibilityState={{ selected: c.id === competitionId }} style={[styles.chip, { backgroundColor: c.id === competitionId ? colors.primary : colors.secondary }]}>
-              <Text style={{ fontFamily: fonts.bodySemi, fontSize: 12, color: c.id === competitionId ? colors.primaryForeground : colors.foreground }}>{c.name}</Text>
-            </Pressable>
+            <Chip key={c.id} label={c.name} selected={c.id === competitionId} onPress={() => setCompetitionId(c.id)} role="tab" />
           ))}
         </ScrollView>
-        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
           {seasons.map((s) => (
-            <Pressable key={s.id} onPress={() => setSeasonId(s.id)} accessibilityRole="button" accessibilityState={{ selected: s.id === seasonId }} style={[styles.chip, { backgroundColor: s.id === seasonId ? colors.accent : colors.secondary }]}>
-              <Text style={{ fontFamily: fonts.bodySemi, fontSize: 12, color: s.id === seasonId ? colors.accentForeground : colors.foreground }}>{s.name}</Text>
-            </Pressable>
+            <Chip key={s.id} size="sm" tone="accent" label={s.name} selected={s.id === seasonId} onPress={() => setSeasonId(s.id)} />
           ))}
         </View>
         <View style={{ marginBottom: 12 }}>
@@ -217,18 +214,14 @@ export default function AdminScreen() {
             <Text style={[styles.label, { color: colors.mutedForeground }]}>Home team</Text>
             <View style={styles.teamPick}>
               {teams.map((t) => (
-                <Pressable key={t.id} onPress={() => setHomeId(t.id)} accessibilityRole="radio" accessibilityState={{ selected: homeId === t.id }} style={[styles.chip, { backgroundColor: homeId === t.id ? colors.primary : colors.secondary }]}>
-                  <Text style={{ fontFamily: fonts.bodySemi, fontSize: 12, color: homeId === t.id ? colors.primaryForeground : colors.foreground }}>{t.short_name}</Text>
-                </Pressable>
+                <Chip key={t.id} size="sm" label={t.short_name} swatch={t.primary_color} selected={homeId === t.id} onPress={() => setHomeId(t.id)} role="radio" accessibilityLabel={`Home team ${t.name}`} />
               ))}
             </View>
             {fieldErrors.home ? <Text style={[styles.fieldError, { color: colors.destructive }]}>{fieldErrors.home}</Text> : null}
             <Text style={[styles.label, { color: colors.mutedForeground }]}>Away team</Text>
             <View style={styles.teamPick}>
               {teams.map((t) => (
-                <Pressable key={t.id} onPress={() => setAwayId(t.id)} accessibilityRole="radio" accessibilityState={{ selected: awayId === t.id }} style={[styles.chip, { backgroundColor: awayId === t.id ? colors.accent : colors.secondary }]}>
-                  <Text style={{ fontFamily: fonts.bodySemi, fontSize: 12, color: awayId === t.id ? colors.accentForeground : colors.foreground }}>{t.short_name}</Text>
-                </Pressable>
+                <Chip key={t.id} size="sm" tone="accent" label={t.short_name} swatch={t.primary_color} selected={awayId === t.id} onPress={() => setAwayId(t.id)} role="radio" accessibilityLabel={`Away team ${t.name}`} />
               ))}
             </View>
             {fieldErrors.away ? <Text style={[styles.fieldError, { color: colors.destructive }]}>{fieldErrors.away}</Text> : null}
@@ -242,12 +235,12 @@ export default function AdminScreen() {
           </View>
         ) : (
           <View style={{ gap: 10 }}>
-            <Button label="Recalculate standings & leaderboards" variant="teal" disabled={!seasonId || busy} onPress={() => seasonId && tool('Recalculated', () => adminApi.recalc(seasonId))} />
-            <Button label="Run housekeeping (expire holds, retry emails)" variant="secondary" disabled={busy} onPress={() => tool('Jobs', () => adminApi.runJobs())} />
-            <Button label="Validate a ticket (scanner)" variant="secondary" onPress={() => router.push('/admin/scan' as Href)} />
-            <Button label="Edit rankings" variant="secondary" disabled={!seasonId} onPress={() => router.push(`/admin/rankings?season=${seasonId}` as Href)} />
-            <Button label="Pause online checkout" variant="ghost" disabled={busy} onPress={() => tool('Settings', () => adminApi.updateSettings({ checkout_enabled: false, reason: 'Paused from admin tools' }))} />
-            <Button label="Resume online checkout (test provider)" variant="ghost" disabled={busy} onPress={() => tool('Settings', () => adminApi.updateSettings({ checkout_enabled: true, reason: 'Resumed from admin tools' }))} />
+            <Button label="Validate a ticket (scanner)" icon="qr-code-outline" variant="teal" onPress={() => router.push('/admin/scan' as Href)} />
+            <Button label="Recalculate standings & leaderboards" icon="refresh-outline" variant="secondary" disabled={!seasonId || busy} onPress={() => seasonId && tool('Recalculated', () => adminApi.recalc(seasonId))} />
+            <Button label="Edit rankings" icon="podium-outline" variant="secondary" disabled={!seasonId} onPress={() => router.push(`/admin/rankings?season=${seasonId}` as Href)} />
+            <Button label="Run housekeeping (expire holds, retry emails)" icon="time-outline" variant="secondary" disabled={busy} onPress={() => tool('Jobs', () => adminApi.runJobs())} />
+            <Button label="Pause online checkout" icon="pause-circle-outline" variant="danger" disabled={busy} onPress={() => tool('Settings', () => adminApi.updateSettings({ checkout_enabled: false, reason: 'Paused from admin tools' }))} />
+            <Button label="Resume online checkout (test provider)" icon="play-circle-outline" variant="ghost" disabled={busy} onPress={() => tool('Settings', () => adminApi.updateSettings({ checkout_enabled: true, reason: 'Resumed from admin tools' }))} />
           </View>
         )}
         <View style={{ height: 32 }} />
@@ -259,13 +252,12 @@ export default function AdminScreen() {
 const styles = StyleSheet.create({
   center: { flex: 1, padding: 16, justifyContent: 'center' },
   body: { padding: 16 },
-  chip: { paddingHorizontal: 12, height: 36, borderRadius: radius.full, justifyContent: 'center' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 12, borderRadius: radius.md, borderWidth: 1, marginBottom: 8 },
   rowTitle: { fontFamily: fonts.bodySemi, fontSize: 14 },
   rowMeta: { fontFamily: fonts.body, fontSize: 12 },
   panel: { borderRadius: radius.lg, borderWidth: 1, padding: 14, gap: 8 },
   label: { fontFamily: fonts.bodySemi, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 6 },
-  teamPick: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  teamPick: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   input: { borderWidth: 1, borderRadius: radius.md, height: 48, paddingHorizontal: 12, fontFamily: fonts.body },
   fieldError: { fontFamily: fonts.bodyMed, fontSize: 12 },
 });

@@ -194,7 +194,8 @@ export default function OrderScreen() {
                 <Button
                   key={o}
                   label={o === 'success' ? 'Pay (success)' : o === 'decline' ? 'Decline' : o === 'cancel' ? 'Cancel at provider' : 'Leave pending'}
-                  variant={o === 'success' ? 'primary' : 'secondary'}
+                  icon={o === 'success' ? 'checkmark-circle-outline' : o === 'decline' ? 'close-circle-outline' : o === 'cancel' ? 'arrow-undo-outline' : 'hourglass-outline'}
+                  variant={o === 'success' ? 'primary' : o === 'decline' ? 'danger' : o === 'cancel' ? 'secondary' : 'ghost'}
                   size="sm"
                   style={styles.fakeBtn}
                   loading={busy === `fake-${o}`}
@@ -213,13 +214,13 @@ export default function OrderScreen() {
         <View style={styles.actions}>
           {payable ? (
             co.enabled ? (
-              <Button label={order.state === 'failed' ? 'Try payment again' : 'Pay now'} onPress={startCheckout} loading={busy === 'checkout'} disabled={Boolean(busy)} />
+              <Button label={order.state === 'failed' ? 'Try payment again' : 'Pay now'} icon="card-outline" size="lg" onPress={startCheckout} loading={busy === 'checkout'} disabled={Boolean(busy)} />
             ) : (
               <Notice tone="info" title="Checkout unavailable" message="Online payment is not enabled yet. Your order is saved and your seats stay held until the timer ends." />
             )
           ) : null}
-          {order.state === 'pending' ? <Button label="Check payment status" variant="secondary" onPress={() => run('sync', () => ticketingApi.sync(orderId!))} loading={busy === 'sync'} disabled={Boolean(busy)} /> : null}
-          {order.state === 'paid' && tickets.length ? <Button label={`View ${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`} variant="teal" onPress={() => router.push('/tickets' as Href)} /> : null}
+          {order.state === 'pending' ? <Button label="Check payment status" icon="refresh-outline" variant="secondary" onPress={() => run('sync', () => ticketingApi.sync(orderId!))} loading={busy === 'sync'} disabled={Boolean(busy)} /> : null}
+          {order.state === 'paid' && tickets.length ? <Button label={`View ${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`} icon="ticket-outline" size="lg" variant="teal" onPress={() => router.push('/tickets' as Href)} /> : null}
           {['awaiting_checkout', 'pending', 'failed', 'paid'].includes(order.state) ? (
             confirmCancel ? (
               <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.destructive }]}>
@@ -227,7 +228,7 @@ export default function OrderScreen() {
                 <Text style={[styles.desc, { color: colors.mutedForeground }]}>{order.state === 'paid' ? 'Automated refunds are not enabled yet. Your request will be reviewed manually.' : 'Your held seats will be released immediately.'}</Text>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   <Button label="Keep order" variant="ghost" style={{ flex: 1 }} onPress={() => setConfirmCancel(false)} />
-                  <Button label="Confirm" style={{ flex: 1 }} loading={busy === 'cancel'} onPress={() => run('cancel', () => ticketingApi.cancel(orderId!), () => setConfirmCancel(false))} />
+                  <Button label="Confirm" variant="danger" style={{ flex: 1 }} loading={busy === 'cancel'} onPress={() => run('cancel', () => ticketingApi.cancel(orderId!), () => setConfirmCancel(false))} />
                 </View>
               </View>
             ) : (

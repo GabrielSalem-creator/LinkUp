@@ -141,8 +141,9 @@ export default function MatchDetailScreen() {
         {info.cta ? (
           <Button
             label={info.cta}
+            icon="ticket-outline"
             size="sm"
-            style={{ width: 140, maxWidth: 140 }}
+            style={{ width: 150, maxWidth: 150 }}
             onPress={() => {
               if (!user) return;
               router.push(`/match/${match.id}/book` as Href);
