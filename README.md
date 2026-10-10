@@ -24,7 +24,7 @@ In Vercel → Project **linkup** → **Settings**:
 1. **Root Directory** = **`mobile`**
 2. Framework Preset = **Other**
 3. Build / Output / Install overrides = **OFF**
-4. Production Branch = **`main`**
+4. Production Branch is currently **`master`** (pushes to `main` only create previews). Either change it to `main` in Vercel settings, or mirror: `git push origin main:master`
 
 Redeploy from CLI (already done for production):
 

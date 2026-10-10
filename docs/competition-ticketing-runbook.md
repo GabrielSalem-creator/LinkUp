@@ -1,6 +1,6 @@
 # Competition / Season, Match Details & Ticketing — implementation runbook
 
-Implements `docs/plans/2026-09-30-competition-season-ticketing.md` (`[COMP-001]`). Merged to `main` on 2026-10-10 (Vercel deploys `main`).
+Implements `docs/plans/2026-09-30-competition-season-ticketing.md` (`[COMP-001]`). Merged to `main` on 2026-10-10. **Vercel's production branch is `master`**: pushes to `main` create Preview deployments only, so after merging to `main` also run `git push origin main:master` (or change Production Branch to `main` in Vercel → Settings → Git).
 Everything runs against the existing Appwrite Cloud project (`6a61202f000e451a56a8`, db `linkup`), which currently
 serves as both staging and production. Community collections (clubs, club_events, RSVPs, leagues…) were not touched.
 
