@@ -1,0 +1,10 @@
+{
+  "name": "linkup-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "build/functions/linkup-api/src/main.js",
+  "dependencies": {
+    "node-appwrite": "^27.0.0"
+  }
+}

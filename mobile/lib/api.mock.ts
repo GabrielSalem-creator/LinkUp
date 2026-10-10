@@ -41,6 +41,9 @@ let eventParticipants = [...EVENT_PARTICIPANTS];
 let leagueParticipants = [...LEAGUE_PARTICIPANTS];
 let leagues = [...LEAGUES];
 let events = [...EVENTS];
+let clubs = [...CLUBS];
+let activities = [...ACTIVITIES];
+let memories = [...MEMORIES];
 
 export const mockApi = {
   auth: {
@@ -76,11 +79,50 @@ export const mockApi = {
   clubs: {
     async list(): Promise<Club[]> {
       await delay();
-      return [...CLUBS].sort((a, b) => a.name.localeCompare(b.name));
+      return [...clubs].sort((a, b) => a.name.localeCompare(b.name));
     },
     async get(id: string): Promise<Club | null> {
       await delay();
-      return CLUBS.find((c) => c.id === id) ?? null;
+      return clubs.find((c) => c.id === id) ?? null;
+    },
+    async create(input: {
+      name: string;
+      sport: Club['sport'];
+      city: string;
+      description?: string;
+      owner_email: string;
+      contact_email: string;
+      club_password: string;
+      instagram_link?: string;
+      logo_url?: string;
+    }): Promise<Club> {
+      await delay(300);
+      const club: Club = {
+        id: `c-${Date.now()}`,
+        name: input.name,
+        slug: input.name.toLowerCase().replace(/\s+/g, '-'),
+        sport: input.sport,
+        city: input.city,
+        description: input.description,
+        owner_email: input.owner_email,
+        contact_email: input.contact_email,
+        club_password: input.club_password,
+        member_count: 0,
+        is_verified: false,
+        subscription_status: 'inactive',
+        payment_intent: false,
+        instagram_link: input.instagram_link,
+        logo_url: input.logo_url,
+      };
+      clubs.push(club);
+      return { ...club };
+    },
+    async markPaymentIntent(clubId: string): Promise<Club | null> {
+      await delay(200);
+      const club = clubs.find((c) => c.id === clubId);
+      if (!club) return null;
+      club.payment_intent = true;
+      return { ...club };
     },
   },
 
@@ -92,6 +134,10 @@ export const mockApi = {
     async forClub(clubId: string): Promise<ClubEvent[]> {
       await delay();
       return events.filter((e) => e.club_id === clubId).sort((a, b) => a.date.localeCompare(b.date));
+    },
+    async get(id: string): Promise<ClubEvent | null> {
+      await delay();
+      return events.find((e) => e.id === id) ?? null;
     },
     async create(input: Omit<ClubEvent, 'id'>): Promise<ClubEvent> {
       await delay(200);
@@ -133,11 +179,17 @@ export const mockApi = {
   activities: {
     async forUser(email: string): Promise<Activity[]> {
       await delay();
-      return ACTIVITIES.filter((a) => a.user_email === email).sort((a, b) => b.date.localeCompare(a.date));
+      return activities.filter((a) => a.user_email === email).sort((a, b) => b.date.localeCompare(a.date));
     },
     async list(): Promise<Activity[]> {
       await delay();
-      return [...ACTIVITIES];
+      return [...activities];
+    },
+    async create(input: Omit<Activity, 'id'>): Promise<Activity> {
+      await delay(200);
+      const created: Activity = { ...input, id: `act-${Date.now()}` };
+      activities.push(created);
+      return { ...created };
     },
   },
 
@@ -212,6 +264,29 @@ export const mockApi = {
       eventParticipants.push(ep);
       return { ...ep };
     },
+    async complete(participant: EventParticipant, code: string, user: User): Promise<Activity> {
+      await delay(250);
+      const event = events.find((e) => e.id === participant.event_id);
+      if (!event) throw new Error('Event not found');
+      const expected = (event.attendance_password || '').trim().toUpperCase();
+      if (!expected || expected !== code.trim().toUpperCase()) {
+        throw new Error('Incorrect event code');
+      }
+      const activity: Activity = {
+        id: `act-${Date.now()}`,
+        user_email: user.email,
+        user_name: user.full_name,
+        club_id: event.club_id,
+        club_name: event.club_name || participant.club_name,
+        sport: (event.sport || 'other') as Activity['sport'],
+        distance_km: event.distance_km || 0,
+        date: event.date,
+        notes: `Attended event: ${event.title}`,
+      };
+      activities.push(activity);
+      eventParticipants = eventParticipants.filter((p) => p.id !== participant.id);
+      return { ...activity };
+    },
   },
 
   friendships: {
@@ -273,7 +348,13 @@ export const mockApi = {
   memories: {
     async forUser(email: string): Promise<Memory[]> {
       await delay();
-      return MEMORIES.filter((m) => m.user_email === email);
+      return memories.filter((m) => m.user_email === email);
+    },
+    async create(input: Omit<Memory, 'id'>): Promise<Memory> {
+      await delay(200);
+      const created: Memory = { ...input, id: `mem-${Date.now()}` };
+      memories.push(created);
+      return { ...created };
     },
   },
 
@@ -294,7 +375,7 @@ export const mockApi = {
   /** Verify club portal password (demo: any club with club_password, or "demo1234" for club-1) */
   async verifyClubPassword(clubId: string, password: string): Promise<boolean> {
     await delay(200);
-    const club = CLUBS.find((c) => c.id === clubId);
+    const club = clubs.find((c) => c.id === clubId);
     if (!club?.club_password) return password === 'demo1234';
     return club.club_password === password;
   },

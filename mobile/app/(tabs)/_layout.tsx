@@ -1,17 +1,47 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { type ColorValue, Platform, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { fonts } from '@/constants/theme';
+import { fonts, radius } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/ThemeContext';
 
+function TabIcon({
+  focused,
+  color,
+  name,
+  nameOutline,
+  badge,
+}: {
+  focused: boolean;
+  color: ColorValue;
+  name: keyof typeof Ionicons.glyphMap;
+  nameOutline: keyof typeof Ionicons.glyphMap;
+  badge?: number;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.iconWrap, focused && { backgroundColor: `${colors.accent}22` }]}>
+      <Ionicons name={focused ? name : nameOutline} size={22} color={color} />
+      {badge && badge > 0 ? (
+        <View style={[styles.badge, { backgroundColor: colors.accent }]}>
+          <Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 export default function TabLayout() {
   const { colors } = useTheme();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [pending, setPending] = useState(0);
+  const bottomPad = Math.max(insets.bottom, Platform.OS === 'web' ? 8 : 6);
+  const tabHeight = 56 + bottomPad;
 
   useEffect(() => {
     if (!user?.email) return;
@@ -22,18 +52,26 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
-          height: 64,
-          paddingBottom: 8,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          height: tabHeight,
+          paddingBottom: bottomPad,
           paddingTop: 6,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 2,
         },
         tabBarLabelStyle: {
-          fontFamily: fonts.bodyMed,
-          fontSize: 10,
+          fontFamily: fonts.bodySemi,
+          fontSize: 11,
+          marginTop: 1,
         },
       }}
     >
@@ -42,25 +80,34 @@ export default function TabLayout() {
         options={{
           title: 'Events',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={22} color={color} />
+            <TabIcon focused={focused} color={color} name="calendar" nameOutline="calendar-outline" />
           ),
         }}
       />
       <Tabs.Screen
         name="my-clubs"
         options={{
-          title: 'My Clubs',
+          title: 'Clubs',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'people' : 'people-outline'} size={22} color={color} />
+            <TabIcon focused={focused} color={color} name="shield" nameOutline="shield-outline" />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="competition"
+        options={{
+          title: 'Compete',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon focused={focused} color={color} name="podium" nameOutline="podium-outline" />
           ),
         }}
       />
       <Tabs.Screen
         name="leagues"
         options={{
-          title: 'MyLeague',
+          title: 'Leagues',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'trophy' : 'trophy-outline'} size={22} color={color} />
+            <TabIcon focused={focused} color={color} name="trophy" nameOutline="trophy-outline" />
           ),
         }}
       />
@@ -69,32 +116,38 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <View>
-              <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
-              {pending > 0 ? (
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: -4,
-                    right: -8,
-                    minWidth: 16,
-                    height: 16,
-                    borderRadius: 8,
-                    backgroundColor: colors.destructive,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingHorizontal: 3,
-                  }}
-                >
-                  <Text style={{ color: '#fff', fontSize: 9, fontFamily: fonts.bodyBold }}>
-                    {pending > 9 ? '9+' : pending}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
+            <TabIcon
+              focused={focused}
+              color={color}
+              name="person"
+              nameOutline="person-outline"
+              badge={pending}
+            />
           ),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  iconWrap: {
+    width: 48,
+    height: 32,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: 4,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: { color: '#fff', fontSize: 9, fontFamily: fonts.bodyBold },
+});

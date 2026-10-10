@@ -8,6 +8,8 @@ export type Sport =
   | 'crossfit'
   | 'yoga'
   | 'hiking'
+  | 'tennis'
+  | 'pilates'
   | 'other';
 
 export type LeagueSport =
@@ -20,6 +22,8 @@ export type LeagueSport =
   | 'crossfit'
   | 'yoga'
   | 'hiking'
+  | 'tennis'
+  | 'pilates'
   | 'other';
 
 export interface User {
@@ -47,10 +51,12 @@ export interface Club {
   logo_url?: string;
   cover_url?: string;
   owner_email: string;
+  contact_email?: string;
   club_password?: string;
   member_count: number;
   is_verified: boolean;
   subscription_status: 'inactive' | 'active' | 'cancelled';
+  payment_intent?: boolean;
   instagram_link?: string;
 }
 
@@ -138,6 +144,9 @@ export interface Memory {
   location?: string;
   photo_url: string;
   date: string;
+  event_id?: string;
+  event_title?: string;
+  club_name?: string;
 }
 
 export interface MerchItem {

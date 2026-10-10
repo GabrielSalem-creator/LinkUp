@@ -1,3 +1,4 @@
+import { type Href, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Alert,
@@ -9,14 +10,17 @@ import {
   View,
 } from 'react-native';
 
+import Button from '@/components/ui/Button';
 import SportBadge from '@/components/ui/SportBadge';
-import { fonts } from '@/constants/theme';
+import { fonts, radius } from '@/constants/theme';
 import { api } from '@/lib/api';
+import { generateCode } from '@/lib/scoring';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Club, ClubEvent } from '@/types';
 
 export default function ClubPortalScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
   const [password, setPassword] = useState('');
@@ -25,6 +29,7 @@ export default function ClubPortalScreen() {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('06:00');
+  const [lastCode, setLastCode] = useState<string | null>(null);
 
   useEffect(() => {
     api.clubs.list().then(setClubs);
@@ -51,6 +56,7 @@ export default function ClubPortalScreen() {
       Alert.alert('Missing fields', 'Title and date (YYYY-MM-DD) are required');
       return;
     }
+    const attendance_password = generateCode('', 6);
     try {
       const created = await api.events.create({
         club_id: selectedClub.id,
@@ -60,10 +66,15 @@ export default function ClubPortalScreen() {
         date: date.trim(),
         time,
         meeting_point: 'TBD',
+        attendance_password,
       });
       setEvents((prev) => [created, ...prev]);
       setTitle('');
-      Alert.alert('Event published', `${created.title} is now live on LinkUp.`);
+      setLastCode(attendance_password);
+      Alert.alert(
+        'Event published',
+        `Share this completion code with attendees at the end of the event:\n\n${attendance_password}\n\nOnly you (the creator) see this code here.`,
+      );
     } catch (e) {
       Alert.alert('Could not create event', e instanceof Error ? e.message : 'Try again');
     }
@@ -73,9 +84,16 @@ export default function ClubPortalScreen() {
     return (
       <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.list}>
         <Text style={[styles.lead, { color: colors.mutedForeground }]}>
-          Club owners unlock the portal with a secondary password. Athletes stay on the main app.
+          Club owners unlock the portal with a secondary password. New clubs go through assessment first.
         </Text>
-        <Text style={[styles.label, { color: colors.mutedForeground }]}>Select club</Text>
+
+        <Button
+          label="Register a new club"
+          onPress={() => router.push('/create-club' as Href)}
+          style={{ marginBottom: 18 }}
+        />
+
+        <Text style={[styles.label, { color: colors.mutedForeground }]}>Select existing club</Text>
         {clubs.map((club) => {
           const on = selectedClub?.id === club.id;
           return (
@@ -85,8 +103,8 @@ export default function ClubPortalScreen() {
               style={[
                 styles.clubRow,
                 {
-                  backgroundColor: on ? `${colors.primary}22` : colors.card,
-                  borderColor: on ? colors.primary : colors.border,
+                  backgroundColor: on ? `${colors.accent}18` : colors.card,
+                  borderColor: on ? colors.accent : colors.border,
                 },
               ]}
             >
@@ -94,6 +112,7 @@ export default function ClubPortalScreen() {
                 <Text style={[styles.clubName, { color: colors.foreground }]}>{club.name}</Text>
                 <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, fontSize: 12 }}>
                   {club.city}
+                  {!club.is_verified ? ' · pending review' : ''}
                 </Text>
               </View>
               <SportBadge sport={club.sport} size="sm" />
@@ -113,13 +132,7 @@ export default function ClubPortalScreen() {
             { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground },
           ]}
         />
-        <Pressable
-          onPress={unlock}
-          disabled={!selectedClub}
-          style={[styles.primaryBtn, { backgroundColor: colors.primary, opacity: selectedClub ? 1 : 0.5 }]}
-        >
-          <Text style={styles.primaryText}>Unlock portal</Text>
-        </Pressable>
+        <Button label="Unlock portal" onPress={unlock} disabled={!selectedClub} variant="teal" />
       </ScrollView>
     );
   }
@@ -128,8 +141,16 @@ export default function ClubPortalScreen() {
     <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.list}>
       <Text style={[styles.title, { color: colors.foreground }]}>{selectedClub?.name} Portal</Text>
       <Text style={[styles.lead, { color: colors.mutedForeground }]}>
-        Subscription: {selectedClub?.subscription_status} · Manage events below
+        Subscription: {selectedClub?.subscription_status} · Each event gets a secret completion code
       </Text>
+
+      {lastCode ? (
+        <View style={[styles.codeBanner, { backgroundColor: colors.primary }]}>
+          <Text style={styles.codeLabel}>Latest event code (creator only)</Text>
+          <Text style={styles.codeValue}>{lastCode}</Text>
+          <Text style={styles.codeHint}>Give this to attendees so they can mark the event complete.</Text>
+        </View>
+      ) : null}
 
       <View style={[styles.panel, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <Text style={[styles.panelTitle, { color: colors.foreground }]}>Create event</Text>
@@ -154,9 +175,7 @@ export default function ClubPortalScreen() {
           placeholderTextColor={colors.mutedForeground}
           style={[styles.input, { backgroundColor: colors.secondary, borderColor: colors.border, color: colors.foreground }]}
         />
-        <Pressable onPress={createEvent} style={[styles.primaryBtn, { backgroundColor: colors.primary }]}>
-          <Text style={styles.primaryText}>Publish event</Text>
-        </Pressable>
+        <Button label="Publish event" onPress={createEvent} />
       </View>
 
       <Text style={[styles.label, { color: colors.mutedForeground }]}>Your events</Text>
@@ -166,6 +185,11 @@ export default function ClubPortalScreen() {
           <Text style={{ color: colors.mutedForeground, fontFamily: fonts.body, fontSize: 12 }}>
             {ev.date} · {ev.time}
           </Text>
+          {ev.attendance_password ? (
+            <Text style={{ color: colors.accent, fontFamily: fonts.bodyBold, fontSize: 13, marginTop: 6 }}>
+              Code: {ev.attendance_password}
+            </Text>
+          ) : null}
         </View>
       ))}
     </ScrollView>
@@ -184,7 +208,7 @@ const styles = StyleSheet.create({
   },
   clubRow: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: radius.md,
     padding: 12,
     marginBottom: 8,
     flexDirection: 'row',
@@ -194,16 +218,18 @@ const styles = StyleSheet.create({
   clubName: { fontFamily: fonts.headingSemi, fontSize: 14 },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
-    height: 44,
+    borderRadius: radius.md,
+    height: 48,
     paddingHorizontal: 12,
     marginBottom: 10,
     fontFamily: fonts.body,
   },
-  primaryBtn: { height: 46, borderRadius: 999, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
-  primaryText: { color: '#fff', fontFamily: fonts.bodySemi },
   title: { fontFamily: fonts.heading, fontSize: 22, marginBottom: 6 },
-  panel: { borderWidth: 1, borderRadius: 16, padding: 14, marginBottom: 20 },
+  panel: { borderWidth: 1, borderRadius: radius.lg, padding: 14, marginBottom: 20 },
   panelTitle: { fontFamily: fonts.headingSemi, fontSize: 16, marginBottom: 10 },
-  eventRow: { borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 8 },
+  eventRow: { borderWidth: 1, borderRadius: radius.md, padding: 12, marginBottom: 8 },
+  codeBanner: { borderRadius: radius.lg, padding: 16, marginBottom: 16 },
+  codeLabel: { color: 'rgba(255,242,226,0.75)', fontFamily: fonts.bodyMed, fontSize: 12 },
+  codeValue: { color: '#FFF2E2', fontFamily: fonts.heading, fontSize: 28, letterSpacing: 4, marginTop: 4 },
+  codeHint: { color: 'rgba(255,242,226,0.7)', fontFamily: fonts.body, fontSize: 12, marginTop: 6 },
 });

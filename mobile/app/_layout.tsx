@@ -16,10 +16,12 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Text, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import 'react-native-reanimated';
 
 import LoginScreen from '@/components/auth/LoginScreen';
+import AppShell from '@/components/ui/AppShell';
 import { fonts } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { AppThemeProvider, useTheme } from '@/lib/ThemeContext';
@@ -58,19 +60,21 @@ export default function RootLayout() {
   // Never stay on a blank screen waiting for fonts
   if (!fontsLoaded && !fontError && !fontTimeout) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F7F7F8' }}>
-        <ActivityIndicator color="#129B7A" size="large" />
-        <Text style={{ marginTop: 12, color: '#6B7280', fontFamily: 'System' }}>Loading LinkUp…</Text>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF2E2' }}>
+        <ActivityIndicator color="#FF5E4A" size="large" />
+        <Text style={{ marginTop: 12, color: '#6B6560', fontFamily: 'System' }}>Loading LinkUp…</Text>
       </View>
     );
   }
 
   return (
-    <AppThemeProvider>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
-    </AppThemeProvider>
+    <SafeAreaProvider>
+      <AppThemeProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </AppThemeProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -80,50 +84,81 @@ function RootLayoutNav() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={{ marginTop: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
-          Checking your session…
-        </Text>
-      </View>
+      <AppShell>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background }}>
+          <ActivityIndicator color={colors.accent} size="large" />
+          <Text style={{ marginTop: 12, color: colors.mutedForeground, fontFamily: fonts.body }}>
+            Checking your session…
+          </Text>
+        </View>
+      </AppShell>
     );
   }
 
   if (!user) {
-    return <LoginScreen />;
+    return (
+      <AppShell deep>
+        <LoginScreen />
+      </AppShell>
+    );
   }
 
   return (
-    <>
+    <AppShell>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      {usingFallback ? (
-        <View style={{ backgroundColor: '#F59E0B', paddingVertical: 8, paddingHorizontal: 12 }}>
-          <Text style={{ color: '#111', fontFamily: fonts.bodyMed, fontSize: 11, textAlign: 'center' }}>
-            Live login issue{connectionError ? `: ${connectionError}` : ''}. Tap to retry.
-          </Text>
-          <Text
-            onPress={() => loginDemo().catch(() => undefined)}
-            style={{ color: '#111', fontFamily: fonts.bodySemi, fontSize: 12, textAlign: 'center', marginTop: 4 }}
-          >
-            Reconnect to Appwrite
-          </Text>
-        </View>
-      ) : null}
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.foreground,
-          headerTitleStyle: { fontFamily: 'SpaceGrotesk_600SemiBold' },
-          contentStyle: { backgroundColor: colors.background },
-          headerShadowVisible: false,
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="clubs/index" options={{ title: 'Explore Clubs' }} />
-        <Stack.Screen name="club/[id]" options={{ title: 'Club' }} />
-        <Stack.Screen name="people" options={{ title: 'People' }} />
-        <Stack.Screen name="club-portal" options={{ title: 'Club Portal' }} />
-      </Stack>
-    </>
+      <View style={{ flex: 1, backgroundColor: colors.background, width: '100%' }}>
+        {usingFallback ? (
+          <View style={{ backgroundColor: colors.accent, paddingVertical: 10, paddingHorizontal: 12 }}>
+            <Text style={{ color: '#fff', fontFamily: fonts.bodyMed, fontSize: 12, textAlign: 'center' }}>
+              Connection issue{connectionError ? `: ${connectionError}` : ''}. Tap below to retry.
+            </Text>
+            <Text
+              onPress={() => loginDemo().catch(() => undefined)}
+              style={{
+                color: '#fff',
+                fontFamily: fonts.bodySemi,
+                fontSize: 13,
+                textAlign: 'center',
+                marginTop: 6,
+                textDecorationLine: Platform.OS === 'web' ? 'underline' : 'none',
+              }}
+            >
+              Reconnect
+            </Text>
+          </View>
+        ) : null}
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: colors.background },
+            headerTintColor: colors.foreground,
+            headerTitleStyle: { fontFamily: 'SpaceGrotesk_600SemiBold' },
+            contentStyle: { backgroundColor: colors.background, flex: 1 },
+            headerShadowVisible: false,
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="clubs/index" options={{ title: 'Explore Clubs' }} />
+          <Stack.Screen name="club/[id]" options={{ title: 'Club' }} />
+          <Stack.Screen name="people" options={{ title: 'People' }} />
+          <Stack.Screen name="club-portal" options={{ title: 'Club Portal' }} />
+          <Stack.Screen name="create-club" options={{ title: 'Register a Club' }} />
+          <Stack.Screen
+            name="club-request-pending"
+            options={{ title: 'Request Received', headerBackVisible: false }}
+          />
+          <Stack.Screen name="join-league" options={{ title: 'Join League' }} />
+          <Stack.Screen name="connections" options={{ title: 'Connections' }} />
+          <Stack.Screen name="match/[id]/index" options={{ title: 'Match' }} />
+          <Stack.Screen name="match/[id]/book" options={{ title: 'Tickets' }} />
+          <Stack.Screen name="booking/[orderId]" options={{ title: 'Order' }} />
+          <Stack.Screen name="tickets/index" options={{ title: 'My tickets' }} />
+          <Stack.Screen name="tickets/[id]" options={{ title: 'Ticket' }} />
+          <Stack.Screen name="admin/index" options={{ title: 'Admin' }} />
+          <Stack.Screen name="admin/match/[id]" options={{ title: 'Match admin' }} />
+          <Stack.Screen name="admin/scan" options={{ title: 'Validate ticket' }} />
+          <Stack.Screen name="admin/rankings" options={{ title: 'Rankings' }} />
+        </Stack>
+      </View>
+    </AppShell>
   );
 }

@@ -45,10 +45,12 @@ export function mapClub(doc: Doc): Club {
     logo_url: doc.logo_url ? String(doc.logo_url) : undefined,
     cover_url: doc.cover_url ? String(doc.cover_url) : undefined,
     owner_email: String(doc.owner_email || ''),
+    contact_email: doc.contact_email ? String(doc.contact_email) : undefined,
     club_password: doc.club_password ? String(doc.club_password) : undefined,
     member_count: Number(doc.member_count || 0),
     is_verified: Boolean(doc.is_verified),
     subscription_status: (doc.subscription_status as Club['subscription_status']) || 'inactive',
+    payment_intent: Boolean(doc.payment_intent),
     instagram_link: doc.instagram_link ? String(doc.instagram_link) : undefined,
   };
 }
@@ -148,10 +150,13 @@ export function mapMemory(doc: Doc): Memory {
   return {
     id: doc.$id,
     user_email: String(doc.user_email || ''),
-    title: String(doc.title || ''),
+    title: String(doc.title || doc.event_title || 'Memory'),
     location: doc.location ? String(doc.location) : undefined,
     photo_url: String(doc.photo_url || ''),
-    date: String(doc.date || ''),
+    date: String(doc.date || doc.event_date || ''),
+    event_id: doc.event_id ? String(doc.event_id) : undefined,
+    event_title: doc.event_title ? String(doc.event_title) : undefined,
+    club_name: doc.club_name ? String(doc.club_name) : undefined,
   };
 }
 

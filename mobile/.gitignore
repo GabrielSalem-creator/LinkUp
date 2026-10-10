@@ -5,9 +5,13 @@ node_modules/
 
 # Expo
 .expo/
-dist/
 web-build/
 expo-env.d.ts
+.vercel-static/
+.vercel/output/
+
+# Keep committed web export for Vercel (mobile/dist)
+# dist/
 
 # Native
 .kotlin/
@@ -41,3 +45,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+.vercel
+.env*
+
+# local build artifacts
+.tmp/
+functions/**/build/

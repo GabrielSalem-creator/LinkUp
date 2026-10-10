@@ -15,22 +15,24 @@ Open in Expo Go, a simulator, or press `w` for web.
 **Appwrite + Vercel publish:** follow [`mobile/APPWRITE_AND_VERCEL.md`](mobile/APPWRITE_AND_VERCEL.md)  
 Project already pointed at `https://fra.cloud.appwrite.io/v1` / `6a61202f000e451a56a8`.
 
+**Live site:** https://linkup-gold-gamma.vercel.app
+
 ### Vercel deploy (important)
 
-Pushed commit `8a58aa5` includes a ready-made site in **`www/`**.
+In Vercel → Project **linkup** → **Settings**:
 
-In Vercel → Project → **Settings → Build & Development Settings**:
+1. **Root Directory** = **`mobile`**
+2. Framework Preset = **Other**
+3. Build / Output / Install overrides = **OFF**
+4. Production Branch = **`main`**
 
-1. Framework Preset = **Other**
-2. Root Directory = **empty** (repo root) — click Edit and clear it if set to `mobile`
-3. Build Command = override **OFF** (or `echo serving www`)
-4. Output Directory = **`www`** (override ON if needed)
-5. Install Command = override **OFF**
-6. Production Branch = **`main`**
+Redeploy from CLI (already done for production):
 
-Then **Deployments → Redeploy** the latest `main` commit (not an old one).
+```bash
+npx vercel deploy --prod --cwd mobile
+```
 
-If Root Directory is stuck on `mobile`, set Output Directory to **`dist`** instead (also committed).
+Add `linkup-gold-gamma.vercel.app` under Appwrite → Platforms → Web.
 
 ---
 

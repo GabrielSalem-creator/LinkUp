@@ -16,7 +16,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import EventCard from '@/components/events/EventCard';
 import EmptyState from '@/components/ui/EmptyState';
-import { SPORTS, fonts } from '@/constants/theme';
+import IconButton from '@/components/ui/IconButton';
+import ScreenHeader from '@/components/ui/ScreenHeader';
+import { SPORT_ORDER, SPORTS, fonts, radius, sportIcons } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/ThemeContext';
@@ -140,27 +142,79 @@ export default function EventsScreen() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <Text style={[styles.brand, { color: colors.primary }]}>LinkUp</Text>
-        <View style={styles.headerActions}>
-          <Pressable style={styles.iconBtn} onPress={() => router.push('/people')}>
-              <Ionicons name="notifications-outline" size={20} color={colors.foreground} />
-              {pending > 0 ? (
-                <View style={[styles.badge, { backgroundColor: colors.destructive }]}>
-                  <Text style={styles.badgeText}>{pending > 9 ? '9+' : pending}</Text>
-                </View>
-              ) : null}
+      <ScreenHeader
+        title="LinkUp"
+        subtitle="Discover events near you"
+        large
+        right={
+          <>
+            <IconButton
+              name="people-outline"
+              onPress={() => router.push('/people')}
+              badge={pending > 0}
+            />
+            <IconButton name="options-outline" onPress={() => setShowFilters(true)} badge={activeFilters > 0} />
+          </>
+        }
+      />
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.catRow}
+        style={styles.catScroll}
+      >
+        <Pressable
+          onPress={() => setSelectedSports([])}
+          style={[
+            styles.catChip,
+            {
+              backgroundColor: selectedSports.length === 0 ? colors.accent : colors.card,
+              borderColor: selectedSports.length === 0 ? colors.accent : colors.border,
+            },
+          ]}
+        >
+          <Ionicons
+            name="apps-outline"
+            size={18}
+            color={selectedSports.length === 0 ? '#fff' : colors.primary}
+          />
+          <Text
+            style={{
+              color: selectedSports.length === 0 ? '#fff' : colors.foreground,
+              fontFamily: fonts.bodySemi,
+              fontSize: 12,
+            }}
+          >
+            All
+          </Text>
+        </Pressable>
+        {SPORT_ORDER.slice(0, 8).map((s) => {
+          const on = selectedSports.includes(s);
+          return (
+            <Pressable
+              key={s}
+              onPress={() => toggleSport(s)}
+              style={[
+                styles.catChip,
+                {
+                  backgroundColor: on ? colors.accent : colors.card,
+                  borderColor: on ? colors.accent : colors.border,
+                },
+              ]}
+            >
+              <Ionicons
+                name={(sportIcons[s] || 'ellipse-outline') as keyof typeof Ionicons.glyphMap}
+                size={18}
+                color={on ? '#fff' : colors.primary}
+              />
+              <Text style={{ color: on ? '#fff' : colors.foreground, fontFamily: fonts.bodySemi, fontSize: 12 }}>
+                {s}
+              </Text>
             </Pressable>
-          <Pressable style={styles.iconBtn} onPress={() => setShowFilters(true)}>
-            <Ionicons name="options-outline" size={20} color={colors.foreground} />
-            {activeFilters > 0 ? (
-              <View style={[styles.badge, { backgroundColor: colors.primary }]}>
-                <Text style={styles.badgeText}>{activeFilters}</Text>
-              </View>
-            ) : null}
-          </Pressable>
-        </View>
-      </View>
+          );
+        })}
+      </ScrollView>
 
       {loading ? (
         <View style={styles.center}>
@@ -219,7 +273,13 @@ export default function EventsScreen() {
                       },
                     ]}
                   >
-                    <Text style={{ color: on ? '#fff' : colors.foreground, fontFamily: fonts.bodyMed, fontSize: 12 }}>
+                    <Text
+                      style={{
+                        color: on ? colors.primaryForeground : colors.foreground,
+                        fontFamily: fonts.bodyMed,
+                        fontSize: 12,
+                      }}
+                    >
                       {sport}
                     </Text>
                   </Pressable>
@@ -243,7 +303,13 @@ export default function EventsScreen() {
                       },
                     ]}
                   >
-                    <Text style={{ color: on ? '#fff' : colors.foreground, fontFamily: fonts.bodyMed, fontSize: 12 }}>
+                    <Text
+                      style={{
+                        color: on ? colors.primaryForeground : colors.foreground,
+                        fontFamily: fonts.bodyMed,
+                        fontSize: 12,
+                      }}
+                    >
                       {city}
                     </Text>
                   </Pressable>
@@ -263,9 +329,9 @@ export default function EventsScreen() {
               </Pressable>
               <Pressable
                 onPress={() => setShowFilters(false)}
-                style={[styles.btnPrimary, { backgroundColor: colors.primary }]}
+                style={[styles.btnPrimary, { backgroundColor: colors.accent }]}
               >
-                <Text style={{ color: '#fff', fontFamily: fonts.bodySemi }}>Apply</Text>
+                <Text style={{ color: colors.accentForeground, fontFamily: fonts.bodySemi }}>Apply</Text>
               </Pressable>
             </View>
           </View>
@@ -277,48 +343,53 @@ export default function EventsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  header: {
-    height: 56,
-    paddingHorizontal: 16,
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  catScroll: { maxHeight: 56, flexGrow: 0 },
+  catRow: { paddingHorizontal: 16, gap: 8, paddingBottom: 8, alignItems: 'center' },
+  catChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: radius.full,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
-  brand: { fontFamily: fonts.heading, fontSize: 22 },
-  headerActions: { flexDirection: 'row', gap: 4 },
-  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  badge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  badgeText: { color: '#fff', fontSize: 9, fontFamily: fonts.bodyBold },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  list: { padding: 16 },
+  list: { padding: 16, paddingBottom: 32 },
   dayBlock: { marginBottom: 8 },
-  dayLabel: { fontFamily: fonts.headingSemi, fontSize: 16, marginBottom: 10 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36 },
+  dayLabel: {
+    fontFamily: fonts.headingSemi,
+    fontSize: 15,
+    marginBottom: 10,
+    letterSpacing: -0.2,
+  },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(19,52,64,0.55)', justifyContent: 'flex-end' },
+  sheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 36 },
   sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   sheetTitle: { fontFamily: fonts.headingSemi, fontSize: 18 },
-  filterLabel: { fontFamily: fonts.bodySemi, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 8 },
+  filterLabel: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 8,
+  },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  chip: { borderWidth: 1, borderRadius: radius.full, paddingHorizontal: 12, paddingVertical: 7 },
   sheetActions: { flexDirection: 'row', gap: 10, marginTop: 24 },
   btnSecondary: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 999,
-    height: 44,
+    borderRadius: radius.full,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnPrimary: { flex: 1, borderRadius: 999, height: 44, alignItems: 'center', justifyContent: 'center' },
+  btnPrimary: {
+    flex: 1,
+    borderRadius: radius.full,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
