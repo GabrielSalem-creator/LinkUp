@@ -9,6 +9,7 @@ import { LeaderCard, RankingList, type BoardRow } from '@/components/competition
 import MatchCard from '@/components/competition/MatchCard';
 import SegmentedTabs from '@/components/competition/SegmentedTabs';
 import StandingsTable from '@/components/competition/StandingsTable';
+import Chip from '@/components/ui/Chip';
 import EmptyState from '@/components/ui/EmptyState';
 import Notice from '@/components/ui/Notice';
 import ScreenHeader from '@/components/ui/ScreenHeader';
@@ -206,55 +207,38 @@ export default function CompetitionScreen() {
   /* ------------------------------- renderers ------------------------------- */
   const renderCompetitionChips = () => (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow} style={{ flexGrow: 0 }} accessibilityRole="tablist">
-      {(competitions ?? []).map((c) => {
-        const on = c.id === competitionId;
-        const color = sportColors[c.sport] || colors.primary;
-        return (
-          <Pressable
-            key={c.id}
-            onPress={() => setCompetitionId(c.id)}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: on }}
-            accessibilityLabel={`${c.name}, ${c.sport}`}
-            style={[styles.compChip, { backgroundColor: on ? colors.primary : colors.card, borderColor: on ? colors.primary : colors.border }, Platform.OS === 'web' ? ({ cursor: 'pointer' } as object) : null]}
-          >
-            <View style={[styles.compDot, { backgroundColor: on ? colors.accent : color }]}>
-              <Ionicons name={(sportIcons[c.sport] || 'trophy-outline') as keyof typeof Ionicons.glyphMap} size={13} color="#fff" />
-            </View>
-            <Text style={[styles.compText, { color: on ? colors.primaryForeground : colors.foreground }]} numberOfLines={1}>
-              {c.name}
-            </Text>
-          </Pressable>
-        );
-      })}
+      {(competitions ?? []).map((c) => (
+        <Chip
+          key={c.id}
+          label={c.name}
+          icon={(sportIcons[c.sport] || 'trophy-outline') as keyof typeof Ionicons.glyphMap}
+          selected={c.id === competitionId}
+          onPress={() => setCompetitionId(c.id)}
+          role="tab"
+          accessibilityLabel={`${c.name}, ${c.sport}`}
+        />
+      ))}
     </ScrollView>
   );
 
   const renderSeasonRow = () => (
     <View style={styles.seasonRow}>
       <Text style={[styles.seasonLabel, { color: colors.mutedForeground }]}>Season</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
-        {seasons.map((s) => {
-          const on = s.id === seasonId;
-          return (
-            <Pressable
-              key={s.id}
-              onPress={() => {
-                setSeasonId(s.id);
-                setMatchweek(null);
-                setTeamFilter(null);
-              }}
-              accessibilityRole="button"
-              accessibilityState={{ selected: on }}
-              style={[styles.seasonChip, { backgroundColor: on ? colors.accent : colors.secondary, borderColor: on ? colors.accent : colors.border }]}
-            >
-              <Text style={{ fontFamily: fonts.bodySemi, fontSize: 12, color: on ? colors.accentForeground : colors.foreground }}>
-                {s.name}
-                {s.status === 'completed' ? ' · ended' : ''}
-              </Text>
-            </Pressable>
-          );
-        })}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+        {seasons.map((s) => (
+          <Chip
+            key={s.id}
+            size="sm"
+            tone="accent"
+            label={`${s.name}${s.status === 'completed' ? ' (ended)' : ''}`}
+            selected={s.id === seasonId}
+            onPress={() => {
+              setSeasonId(s.id);
+              setMatchweek(null);
+              setTeamFilter(null);
+            }}
+          />
+        ))}
       </ScrollView>
     </View>
   );
@@ -295,25 +279,21 @@ export default function CompetitionScreen() {
           </View>
         ) : null}
         <View style={styles.filterRow}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }} style={{ flex: 1 }}>
-            <Pressable onPress={() => setTeamFilter(null)} accessibilityRole="button" accessibilityState={{ selected: !teamFilter }} style={[styles.teamChip, { backgroundColor: !teamFilter ? colors.primary : colors.secondary }]}>
-              <Text style={{ fontFamily: fonts.bodySemi, fontSize: 11, color: !teamFilter ? colors.primaryForeground : colors.foreground }}>All teams</Text>
-            </Pressable>
-            {data.teams.map((t) => {
-              const on = teamFilter === t.id;
-              return (
-                <Pressable key={t.id} onPress={() => setTeamFilter(on ? null : t.id)} accessibilityRole="button" accessibilityState={{ selected: on }} accessibilityLabel={`Filter by ${t.name}`} style={[styles.teamChip, { backgroundColor: on ? colors.primary : colors.secondary }]}>
-                  <Text style={{ fontFamily: fonts.bodySemi, fontSize: 11, color: on ? colors.primaryForeground : colors.foreground }}>{t.short_name}</Text>
-                </Pressable>
-              );
-            })}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }} style={{ flex: 1 }}>
+            <Chip size="sm" label="All teams" selected={!teamFilter} onPress={() => setTeamFilter(null)} />
+            {data.teams.map((t) => (
+              <Chip
+                key={t.id}
+                size="sm"
+                label={t.short_name}
+                swatch={t.primary_color}
+                selected={teamFilter === t.id}
+                onPress={() => setTeamFilter(teamFilter === t.id ? null : t.id)}
+                accessibilityLabel={`Filter by ${t.name}`}
+              />
+            ))}
           </ScrollView>
-          {filtersActive ? (
-            <Pressable onPress={resetFilters} accessibilityRole="button" accessibilityLabel="Reset filters" style={[styles.resetBtn, { borderColor: colors.border }]}>
-              <Ionicons name="refresh" size={14} color={colors.foreground} />
-              <Text style={{ fontFamily: fonts.bodySemi, fontSize: 11, color: colors.foreground }}>Reset</Text>
-            </Pressable>
-          ) : null}
+          {filtersActive ? <Chip size="sm" tone="accent" icon="refresh" label="Reset" onPress={resetFilters} accessibilityLabel="Reset filters" /> : null}
         </View>
         {visibleMatches.length === 0 ? (
           <EmptyState icon="funnel-outline" title="No matches match" description="Try another matchweek or clear the team filter." />
@@ -402,15 +382,10 @@ export default function CompetitionScreen() {
     const rows: BoardRow[] = data.rankings.filter((r) => r.board_code === active.code).map((r) => ({ rank: r.rank, player_id: r.player_id, value: r.points, previous_rank: r.previous_rank }));
     return (
       <View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingBottom: 12 }}>
-          {boards.map((b) => {
-            const on = b.code === active.code;
-            return (
-              <Pressable key={b.code} onPress={() => setRankingBoard(b.code)} accessibilityRole="tab" accessibilityState={{ selected: on }} style={[styles.teamChip, { backgroundColor: on ? colors.primary : colors.secondary }]}>
-                <Text style={{ fontFamily: fonts.bodySemi, fontSize: 11, color: on ? colors.primaryForeground : colors.foreground }}>{b.label}</Text>
-              </Pressable>
-            );
-          })}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 12 }}>
+          {boards.map((b) => (
+            <Chip key={b.code} size="sm" label={b.label} selected={b.code === active.code} onPress={() => setRankingBoard(b.code)} role="tab" />
+          ))}
         </ScrollView>
         <Text style={[styles.dayLabel, { color: colors.foreground }]}>
           {active.label} · Top {active.limit}
@@ -476,19 +451,13 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   list: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 24 },
   chipRow: { gap: 8, paddingBottom: 10 },
-  compChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 6, paddingRight: 14, height: 44, borderRadius: radius.full, borderWidth: 1 },
-  compDot: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  compText: { fontFamily: fonts.bodySemi, fontSize: 13, maxWidth: 190 },
   seasonRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
   seasonLabel: { fontFamily: fonts.bodySemi, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6 },
-  seasonChip: { paddingHorizontal: 12, height: 36, borderRadius: radius.full, borderWidth: 1, justifyContent: 'center' },
   weekNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: radius.lg, borderWidth: 1, paddingHorizontal: 6, paddingVertical: 6, marginBottom: 10 },
   weekBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   weekTitle: { fontFamily: fonts.headingSemi, fontSize: 16 },
   weekSub: { fontFamily: fonts.bodySemi, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.6 },
   filterRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  teamChip: { paddingHorizontal: 12, height: 34, borderRadius: radius.full, justifyContent: 'center' },
-  resetBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 34, paddingHorizontal: 10, borderRadius: radius.full, borderWidth: 1 },
   dayLabel: { fontFamily: fonts.headingSemi, fontSize: 15, marginBottom: 10, letterSpacing: -0.2 },
   legend: { fontFamily: fonts.body, fontSize: 12, lineHeight: 17, marginTop: 10 },
 });

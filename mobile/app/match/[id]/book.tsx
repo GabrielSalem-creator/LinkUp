@@ -345,11 +345,11 @@ export default function BookScreen() {
                         />
                       </View>
                     </View>
-                    <Button label="Continue to order" onPress={() => continueToOrder(false)} loading={busy} />
+                    <Button label="Continue to order" icon="arrow-forward" size="lg" onPress={() => continueToOrder(false)} loading={busy} />
                     <Button label="Release seats" variant="ghost" onPress={releaseHold} disabled={busy} />
                   </View>
                 ) : (
-                  <Button label={selected.kind === 'assigned' ? `Hold ${seatIds.size || ''} seat${seatIds.size === 1 ? '' : 's'}` : `Hold ${quantity} ticket${quantity === 1 ? '' : 's'}`} onPress={reserve} loading={busy} disabled={selected.kind === 'assigned' ? seatIds.size === 0 : quantity < 1} />
+                  <Button icon="lock-closed-outline" size="lg" label={selected.kind === 'assigned' ? `Hold ${seatIds.size || ''} seat${seatIds.size === 1 ? '' : 's'}` : `Hold ${quantity} ticket${quantity === 1 ? '' : 's'}`} onPress={reserve} loading={busy} disabled={selected.kind === 'assigned' ? seatIds.size === 0 : quantity < 1} />
                 )}
               </View>
             ) : (
