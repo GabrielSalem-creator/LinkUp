@@ -48,3 +48,7 @@ yarn-error.*
 
 .vercel
 .env*
+
+# local build artifacts
+.tmp/
+functions/**/build/

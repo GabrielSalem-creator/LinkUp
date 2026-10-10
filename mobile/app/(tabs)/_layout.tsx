@@ -94,6 +94,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="competition"
+        options={{
+          title: 'Compete',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon focused={focused} color={color} name="podium" nameOutline="podium-outline" />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="leagues"
         options={{
           title: 'Leagues',

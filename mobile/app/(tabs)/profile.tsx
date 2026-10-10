@@ -23,6 +23,7 @@ import { fonts, radius } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
 import { api } from '@/lib/api';
 import { formatScore, metricForSport } from '@/lib/scoring';
+import { serverApi } from '@/lib/serverApi';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Activity, EventParticipant, Memory } from '@/types';
 
@@ -45,6 +46,14 @@ export default function ProfileScreen() {
   const [editCity, setEditCity] = useState('');
 
   const [completeEp, setCompleteEp] = useState<EventParticipant | null>(null);
+  const [isAppAdmin, setIsAppAdmin] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    serverApi.isAppAdmin().then((v) => alive && setIsAppAdmin(v));
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
   const [eventCode, setEventCode] = useState('');
   const [completing, setCompleting] = useState(false);
 
@@ -189,6 +198,24 @@ export default function ProfileScreen() {
             >
               <Ionicons name="storefront-outline" size={18} color={colors.foreground} />
             </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="My tickets"
+              style={[styles.iconAction, { backgroundColor: colors.secondary, borderColor: colors.border }]}
+              onPress={() => router.push('/tickets' as Href)}
+            >
+              <Ionicons name="ticket-outline" size={18} color={colors.foreground} />
+            </Pressable>
+            {isAppAdmin ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Competition admin"
+                style={[styles.iconAction, { backgroundColor: `${colors.accent}22`, borderColor: colors.accent }]}
+                onPress={() => router.push('/admin' as Href)}
+              >
+                <Ionicons name="shield-checkmark-outline" size={18} color={colors.accent} />
+              </Pressable>
+            ) : null}
             <Pressable
               style={[styles.iconAction, { backgroundColor: colors.secondary, borderColor: colors.border }]}
               onPress={toggle}

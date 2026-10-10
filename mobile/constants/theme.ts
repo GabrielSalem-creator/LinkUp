@@ -122,6 +122,14 @@ export const sportColors: Record<string, string> = {
   pilates: '#5ABDB7',
   other: '#6B6560',
   running_walking: '#FF5E4A',
+  // competition sports (additive)
+  basketball: '#E8731A',
+  football: '#0C7A3E',
+  futsal: '#1A4FA3',
+  volleyball: '#C47B16',
+  handball: '#8E2F5A',
+  padel: '#5ABDB7',
+  racing: '#E04545',
 };
 
 export const sportIcons: Record<string, string> = {
@@ -138,4 +146,12 @@ export const sportIcons: Record<string, string> = {
   pilates: 'fitness-outline',
   other: 'ellipse-outline',
   running_walking: 'walk-outline',
+  // competition sports (additive)
+  basketball: 'basketball-outline',
+  football: 'football-outline',
+  futsal: 'football-outline',
+  volleyball: 'baseball-outline',
+  handball: 'hand-left-outline',
+  padel: 'tennisball-outline',
+  racing: 'speedometer-outline',
 };

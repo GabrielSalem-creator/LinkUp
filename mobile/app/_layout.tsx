@@ -148,6 +148,15 @@ function RootLayoutNav() {
           />
           <Stack.Screen name="join-league" options={{ title: 'Join League' }} />
           <Stack.Screen name="connections" options={{ title: 'Connections' }} />
+          <Stack.Screen name="match/[id]/index" options={{ title: 'Match' }} />
+          <Stack.Screen name="match/[id]/book" options={{ title: 'Tickets' }} />
+          <Stack.Screen name="booking/[orderId]" options={{ title: 'Order' }} />
+          <Stack.Screen name="tickets/index" options={{ title: 'My tickets' }} />
+          <Stack.Screen name="tickets/[id]" options={{ title: 'Ticket' }} />
+          <Stack.Screen name="admin/index" options={{ title: 'Admin' }} />
+          <Stack.Screen name="admin/match/[id]" options={{ title: 'Match admin' }} />
+          <Stack.Screen name="admin/scan" options={{ title: 'Validate ticket' }} />
+          <Stack.Screen name="admin/rankings" options={{ title: 'Rankings' }} />
         </Stack>
       </View>
     </AppShell>
