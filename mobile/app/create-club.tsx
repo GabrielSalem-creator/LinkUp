@@ -1,7 +1,6 @@
 import { type Href, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -17,6 +16,7 @@ import Button from '@/components/ui/Button';
 import { SPORT_ORDER, fonts, radius, space, sportIcons } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/lib/AuthContext';
+import { notify } from '@/lib/notify';
 import { api } from '@/lib/api';
 import { useTheme } from '@/lib/ThemeContext';
 import type { Sport } from '@/types';
@@ -36,11 +36,11 @@ export default function CreateClubScreen() {
 
   const submit = async () => {
     if (!user?.email) {
-      Alert.alert('Sign in required');
+      notify('Sign in required');
       return;
     }
     if (!name.trim() || !city.trim() || !contactEmail.trim() || password.length < 4) {
-      Alert.alert('Missing info', 'Name, city, contact email, and a portal password (4+ chars) are required.');
+      notify('Missing info', 'Name, city, contact email, and a portal password (4+ chars) are required.');
       return;
     }
     setBusy(true);
@@ -60,7 +60,7 @@ export default function CreateClubScreen() {
         params: { clubId: club.id, email: contactEmail.trim(), name: club.name },
       } as unknown as Href);
     } catch (e) {
-      Alert.alert('Could not submit', e instanceof Error ? e.message : 'Try again');
+      notify('Could not submit', e instanceof Error ? e.message : 'Try again');
     } finally {
       setBusy(false);
     }

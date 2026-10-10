@@ -11,6 +11,7 @@ type AuthContextValue = {
   connectionError: string | null;
   refresh: () => Promise<void>;
   loginDemo: () => Promise<void>;
+  loginGuest: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -62,6 +63,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setConnectionError(null);
   }, []);
 
+  const loginGuest = useCallback(async () => {
+    const me = await api.auth.loginGuest();
+    setUser(me);
+    setUsingFallback(false);
+    setConnectionError(null);
+  }, []);
+
   const login = useCallback(async (email: string, password: string) => {
     const me = await api.auth.login(email, password);
     setUser(me);
@@ -101,6 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       connectionError,
       refresh,
       loginDemo,
+      loginGuest,
       login,
       register,
       logout,
@@ -113,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       connectionError,
       refresh,
       loginDemo,
+      loginGuest,
       login,
       register,
       logout,

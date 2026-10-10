@@ -22,6 +22,7 @@ import 'react-native-reanimated';
 
 import LoginScreen from '@/components/auth/LoginScreen';
 import AppShell from '@/components/ui/AppShell';
+import { ToastProvider } from '@/components/ui/Toast';
 import { fonts } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { AppThemeProvider, useTheme } from '@/lib/ThemeContext';
@@ -70,9 +71,11 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AppThemeProvider>
-        <AuthProvider>
-          <RootLayoutNav />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <RootLayoutNav />
+          </AuthProvider>
+        </ToastProvider>
       </AppThemeProvider>
     </SafeAreaProvider>
   );
@@ -80,7 +83,7 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const { colors, isDark } = useTheme();
-  const { isLoading, user, usingFallback, connectionError, loginDemo } = useAuth();
+  const { isLoading, user, usingFallback, connectionError, refresh } = useAuth();
 
   if (isLoading) {
     return (
@@ -113,7 +116,7 @@ function RootLayoutNav() {
               Connection issue{connectionError ? `: ${connectionError}` : ''}. Tap below to retry.
             </Text>
             <Text
-              onPress={() => loginDemo().catch(() => undefined)}
+              onPress={() => refresh().catch(() => undefined)}
               style={{
                 color: '#fff',
                 fontFamily: fonts.bodySemi,

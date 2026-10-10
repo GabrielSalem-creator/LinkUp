@@ -3,7 +3,6 @@ import { format } from 'date-fns';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Platform,
   Pressable,
@@ -22,6 +21,7 @@ import ScreenHeader from '@/components/ui/ScreenHeader';
 import SportBadge from '@/components/ui/SportBadge';
 import { INVITE_BASE_URL, fonts, radius, space } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
+import { notify } from '@/lib/notify';
 import { api } from '@/lib/api';
 import { formatScore, metricLabel, scoreActivities, sportsForLeague } from '@/lib/scoring';
 import { useTheme } from '@/lib/ThemeContext';
@@ -41,10 +41,10 @@ const CREATE_SPORTS = [
 async function copyText(text: string, label: string) {
   if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
-    Alert.alert('Copied', `${label} copied to clipboard`);
+    notify('Copied', `${label} copied to clipboard`);
     return;
   }
-  Alert.alert(label, text);
+  notify(label, text);
 }
 
 export default function LeaguesScreen() {
@@ -110,9 +110,9 @@ export default function LeaguesScreen() {
       await api.leagues.joinByCode(joinCode, user);
       setJoinCode('');
       await load();
-      Alert.alert('Joined!', 'You are now in the league.');
+      notify('Joined!', 'You are now in the league.');
     } catch (e) {
-      Alert.alert('Invalid code', e instanceof Error ? e.message : 'Try again');
+      notify('Invalid code', e instanceof Error ? e.message : 'Try again');
     } finally {
       setJoining(false);
     }
@@ -136,9 +136,9 @@ export default function LeaguesScreen() {
       setShowCreate(false);
       setNewName('');
       await load();
-      Alert.alert('League created', `Invite code: ${code}`);
+      notify('League created', `Invite code: ${code}`);
     } catch (e) {
-      Alert.alert('Could not create league', e instanceof Error ? e.message : 'Try again');
+      notify('Could not create league', e instanceof Error ? e.message : 'Try again');
     }
   };
 
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontFamily: fonts.body,
   },
-  joinBtn: { height: 48, paddingHorizontal: 18, minWidth: 88 },
+  joinBtn: { height: 48, paddingHorizontal: 18, minWidth: 96, width: 'auto', flexShrink: 0 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   list: { padding: space.lg, paddingBottom: 40 },
   leagueCard: { borderWidth: 1, borderRadius: radius.lg, padding: space.lg, marginBottom: 10 },

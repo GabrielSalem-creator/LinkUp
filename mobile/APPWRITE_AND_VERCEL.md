@@ -132,8 +132,7 @@ Browser (Vercel) ──Expo web──► Appwrite Cloud (FRA)
 App code path:
 
 - Screens call `lib/api.ts`
-- That routes to `lib/api.appwrite.ts` (live) or `lib/api.mock.ts` (offline)
-- Toggle mock: `EXPO_PUBLIC_USE_MOCK=1`
+- That routes to `lib/api.appwrite.ts` (Appwrite only, no offline mock)
 
 ---
 

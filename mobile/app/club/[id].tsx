@@ -5,7 +5,6 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Linking,
   Pressable,
   ScrollView,
@@ -18,6 +17,7 @@ import EventCard from '@/components/events/EventCard';
 import SportBadge from '@/components/ui/SportBadge';
 import { fonts } from '@/constants/theme';
 import { useAuth } from '@/lib/AuthContext';
+import { notify } from '@/lib/notify';
 import { api } from '@/lib/api';
 import { formatScore, scoreActivities } from '@/lib/scoring';
 import { useTheme } from '@/lib/ThemeContext';
@@ -62,7 +62,7 @@ export default function ClubDetailScreen() {
         setJoinedEventIds(new Set(mine.map((x) => x.event_id)));
       }
     } catch (e) {
-      Alert.alert('Load failed', e instanceof Error ? e.message : 'Try again');
+      notify('Load failed', e instanceof Error ? e.message : 'Try again');
     } finally {
       setLoading(false);
     }
@@ -97,16 +97,16 @@ export default function ClubDetailScreen() {
       } else {
         await api.memberships.join(club.id, user.email);
         setJoined(true);
-        Alert.alert('Joined!', `You're now a member of ${club.name}`);
+        notify('Joined!', `You're now a member of ${club.name}`);
       }
     } catch (e) {
-      Alert.alert('Could not update membership', e instanceof Error ? e.message : 'Try again');
+      notify('Could not update membership', e instanceof Error ? e.message : 'Try again');
     }
   };
 
   const joinEvent = async (ev: ClubEvent) => {
     if (!user?.email) {
-      Alert.alert('Sign in required', 'Log in to join events.');
+      notify('Sign in required', 'Log in to join events.');
       return;
     }
     if (joinedEventIds.has(ev.id)) return;
@@ -114,9 +114,9 @@ export default function ClubDetailScreen() {
     try {
       await api.eventParticipants.join(ev, user.email);
       setJoinedEventIds((prev) => new Set([...prev, ev.id]));
-      Alert.alert('Joined', `You're in for ${ev.title}`);
+      notify('Joined', `You're in for ${ev.title}`);
     } catch (e) {
-      Alert.alert('Could not join', e instanceof Error ? e.message : 'Try again');
+      notify('Could not join', e instanceof Error ? e.message : 'Try again');
     } finally {
       setJoiningEventId(null);
     }

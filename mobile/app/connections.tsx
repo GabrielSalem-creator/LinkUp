@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { fonts, radius, space } from '@/constants/theme';
 import { useTheme } from '@/lib/ThemeContext';
+import { notify } from '@/lib/notify';
 
 const KEY = 'linkup.connections.v1';
 
@@ -31,7 +32,7 @@ export default function ConnectionsScreen() {
     const next = { ...state, [key]: !state[key] };
     setState(next);
     await AsyncStorage.setItem(KEY, JSON.stringify(next));
-    Alert.alert(
+    notify(
       next[key] ? 'Connected (stub)' : 'Disconnected',
       key === 'strava'
         ? 'Strava OAuth will sync distance into leagues once credentials are added.'
