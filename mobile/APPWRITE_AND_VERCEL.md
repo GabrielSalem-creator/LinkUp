@@ -167,3 +167,19 @@ Follow prompts; set the same env vars when asked.
 - **Club subscription:** `CLUB_SUBSCRIPTION_USD = 0` in `constants/theme.ts`. Whish pay button records `payment_intent` only.
 - **Strava / Apple Health:** UI in `/connections` with local AsyncStorage toggles — no OAuth/HealthKit yet.
 - **Event completion codes:** stored as `attendance_password` on `club_events`; users complete from Profile → Events.
+
+---
+
+## Competition / Season, match details & ticketing (added 2026-10-10)
+
+See **[docs/competition-ticketing-runbook.md](../docs/competition-ticketing-runbook.md)** for the schema migration,
+the `linkup-api` Appwrite Function, seeding, admin accounts, feature flags (test-mode checkout) and rollback.
+
+Quick start after pulling:
+
+```bash
+cd mobile
+npm run migrate:competition -- --verify
+npm run deploy:function          # only when functions/linkup-api changes
+npm run admin -- ensure-admin you@example.com YourPassword
+```

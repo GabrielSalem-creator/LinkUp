@@ -1,6 +1,6 @@
 # Competition / Season, Match Details & Ticketing — implementation runbook
 
-Implements `docs/plans/2026-09-30-competition-season-ticketing.md` (`[COMP-001]`). Branch: `feat/competition-ticketing`.
+Implements `docs/plans/2026-09-30-competition-season-ticketing.md` (`[COMP-001]`). Merged to `main` on 2026-10-10 (Vercel deploys `main`).
 Everything runs against the existing Appwrite Cloud project (`6a61202f000e451a56a8`, db `linkup`), which currently
 serves as both staging and production. Community collections (clubs, club_events, RSVPs, leagues…) were not touched.
 
@@ -69,7 +69,6 @@ collections, financial history, payment events, audit rows or issued tickets.
 - No approved email sender: deliveries stay `queued`; in-app tickets remain valid. `EMAIL_PROVIDER=appwrite` wires Appwrite Messaging once a provider is configured.
 - Refund policy not approved: `refunds_enabled=false`; paid orders can only request cancellation.
 - Real competition names, seasons, tie-break rules, rosters, licensed imagery, venue maps and pricing are seed data.
-- Merge to `main` and Vercel deploy are separate decisions.
 
 ## Test accounts (staging)
 
